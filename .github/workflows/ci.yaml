@@ -10,30 +10,6 @@ on:
 
 jobs:
 
-  build-stubs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3.5.0
-
-      - name: Change folder to neqsim-stubs
-        run: cd jneqsim-stubs
-
-      - name: Install Poetry
-        run: pipx install poetry
-
-      - name: Setup Python
-        uses: actions/setup-python@v4.5.0
-        with:
-          python-version: "3.11"
-          cache: 'poetry'
-
-      - name: Check pyproject.toml validity
-        run: poetry check --no-interaction
-
-      - name: build stubs package
-        run: poetry build
-
   run-tests:
     runs-on: ubuntu-latest
     steps:
