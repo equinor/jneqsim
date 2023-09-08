@@ -4,6 +4,10 @@ from jneqsim import neqsim
 
 
 
+
+
+
+
 def do_depressurize_gas():
     inlet_fluid = neqsim.thermo.system.SystemSrkEos()
     neqsim.thermo.system.SystemSrkEos()
@@ -30,7 +34,6 @@ print (os.path.dirname(os.path.abspath(__file__)))
 
 neqsim.thermo.system.SystemSrkEos()
 neqsim.api.ioc.CalculationResult()
-
 neqsim.thermo.system.SystemSrkEos().setPressure(double=2)
 neqsim.api.ioc.CalculationResult()
 do_depressurize_gas()
