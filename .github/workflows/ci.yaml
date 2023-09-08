@@ -10,7 +10,31 @@ on:
 
 jobs:
 
-  run-tests-with-coverage:
+  build-stubs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.5.0
+
+      - name: Change folder to neqsim-stubs
+        run: cd neqsim-stubs
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.5.0
+        with:
+          python-version: "3.11"
+          cache: 'poetry'
+
+      - name: Check pyproject.toml validity
+        run: poetry check --no-interaction
+
+      - name: build stubs package
+        run: poetry build
+
+  run-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,6 +54,9 @@ jobs:
 
       - name: Install deps
         run: poetry install --no-interaction
+
+      - name: Run pre-commit
+        run: poetry run pre-commit run -a
 
       - name: Run tests with coverage
         run: poetry run python -m pytest
