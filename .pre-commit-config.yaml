@@ -26,10 +26,10 @@ repos:
     hooks:
       - id: ruff
         name: Code linting
-        files: .*\.py$
-        exclude: ^jneqsim-stubs/.*
         args:
           - --fix
+          - --config
+          - pyproject.toml
 
   - repo: https://github.com/ambv/black
     rev: 23.7.0
@@ -38,16 +38,14 @@ repos:
         name: Code formatting
         language_version: python3.11
         args: [--target-version, py311]
-        files: ^.*\.py$
-        exclude: ^jneqsim-stubs/.*
+        files: ^jneqsim/.*\.py$
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
         name: Sort imports
-        files: .*\.py$
-        exclude: ^jneqsim-stubs/.*
+        files: ^jneqsim/.*\.py$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.26.3
