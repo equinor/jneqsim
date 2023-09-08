@@ -1,6 +1,5 @@
 import stubgenj
 
-import jneqsim
 from jneqsim import neqsim
 
 stubgenj.generateJavaStubs(

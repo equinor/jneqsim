@@ -1,5 +1,3 @@
-import os
-
 from jneqsim import neqsim
 
 
