@@ -3,12 +3,7 @@ import os
 from jneqsim import neqsim
 
 
-
-
-
-
-
-def do_depressurize_gas():
+def test_pressurize_gas():
     inlet_fluid = neqsim.thermo.system.SystemSrkEos()
     neqsim.thermo.system.SystemSrkEos()
     thermo_ops = neqsim.thermodynamicOperations.ThermodynamicOperations(inlet_fluid)
@@ -29,12 +24,3 @@ def do_depressurize_gas():
     thermo_ops.PHflash(enthalpy)
 
     assert inlet_fluid.getTemperature("C") < 10.0
-
-print (os.path.dirname(os.path.abspath(__file__)))
-
-neqsim.thermo.system.SystemSrkEos()
-neqsim.api.ioc.CalculationResult()
-neqsim.thermo.system.SystemSrkEos().setPressure(double=2)
-neqsim.api.ioc.CalculationResult()
-do_depressurize_gas()
-

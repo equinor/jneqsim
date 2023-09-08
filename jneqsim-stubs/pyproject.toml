@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jneqsim-stubs"
-version = "0.1.1"
+version = "0.1.0"
 description = "Python stubs for NeqSim Java in jneqsim package"
 authors = ["Jørgen <jenge@equinor.com>"]
 license = "Apache-2.0"

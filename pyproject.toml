@@ -4,18 +4,30 @@ version = "0.1.0"
 description = "A java virtual machine connected to NeqSim, with python stubs"
 authors = ["Jørgen <jenge@equinor.com>"]
 license = "Apache-2.0"
-#packages = [
-#    { include = "jneqsim-stubs"},
-#]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 JPype1 = "^1.4.1"
-jneqsim-stubs = { file="../jneqsim-stubs/dist/jneqsim_stubs-0.1.1-py3-none-any.whl"}
+jneqsim-stubs = {file="jneqsim-stubs/dist/jneqsim_stubs-0.1.0-py3-none-any.whl"}
 
 [tool.poetry.group.dev.dependencies]
 stubgenj = "^0.2.12"
 pytest = "^7.4.1"
+pre-commit = "^3.4.0"
+
+
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    # "I",  # isort
+    "S",
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "UP", # automatically upgrade syntax for newer versions of the language
+    "RUF", # ruff specific rules
+]
 
 [build-system]
 requires = ["poetry-core"]

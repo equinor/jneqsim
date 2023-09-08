@@ -1,0 +1,58 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-ast
+        language_version: python3.11
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: trailing-whitespace
+        exclude: ^.*\.(lock)$||^docs\/
+      - id: mixed-line-ending
+        exclude: ^.*\.(lock)$||^docs\/
+      - id: detect-private-key
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v2.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.287'
+    hooks:
+      - id: ruff
+        name: Code linting
+        files: .*\.py$
+        exclude: ^jneqsim-stubs/.*
+        args:
+          - --fix
+
+  - repo: https://github.com/ambv/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        name: Code formatting
+        language_version: python3.11
+        args: [--target-version, py311]
+        files: ^.*\.py$
+        exclude: ^jneqsim-stubs/.*
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: Sort imports
+        files: .*\.py$
+        exclude: ^jneqsim-stubs/.*
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.26.3
+    hooks:
+      - id: check-github-workflows
+
+
+default_stages: [commit]
