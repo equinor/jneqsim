@@ -133,7 +133,6 @@ ENV/
 env.bak/
 venv.bak/
 /dist
-!jneqsim-stubs/dist
 
 # Spyder project settings
 .spyderproject
