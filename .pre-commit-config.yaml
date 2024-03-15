@@ -21,8 +21,8 @@ repos:
       - id: conventional-pre-commit
         stages: [commit-msg]
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.287'
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.3.2'
     hooks:
       - id: ruff
         name: Code linting
@@ -30,26 +30,12 @@ repos:
         args:
           - --fix
 
-  - repo: https://github.com/ambv/black
-    rev: 23.7.0
-    hooks:
-      - id: black
-        name: Code formatting
-        language_version: python3.11
-        args: [--target-version, py311]
-        files: ^.*\.py$
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: Sort imports
-        files: ^.*\.py$
-
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.26.3
+    rev: 0.28.0
     hooks:
       - id: check-github-workflows
+        args:
+          - "--verbose"
 
 
 default_stages: [commit]

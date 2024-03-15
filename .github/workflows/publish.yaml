@@ -1,0 +1,48 @@
+name: "Publish"
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      PYPI_CLI_TOKEN:
+        required: true
+    inputs:
+      neqsim_jar_url:
+        description: "URL for downloading the latest Neqsim JAR"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish dm-cli package to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Download JAR
+        run: |
+          echo "Downloading latest NeqSim JAR from "$neqsim_jar_url"
+          curl -L "$neqsim_jar_url" > "jneqsim/neqsim.jar"
+
+      - name: Generate stubs
+        run: python ./generate_stubs.py
+
+        # TODO: Build the package and test it before publishing
+
+      # - name: Publish package
+      #   run: poetry publish --build -r test-pypi
+
+      # - name: Publish package
+      #   run: poetry publish --build -r test-pypi
+      # - name: Install wheel and twine
+      #   run: python -m pip install wheel twine
+      # - name: build pypi package
+      #   run: python3 setup.py sdist bdist_wheel
+      # - name: Publish pacakge to PyPI
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.PYPI_DM_CLI_TOKEN }}
+      #   run: python -m twine upload dist/*

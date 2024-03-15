@@ -12,8 +12,7 @@ if not jpype.isJVMStarted():
     if jvm_version < 11:
         raise OSError("Outdated Java version, Java 11 or higher is required")
 import jpype.imports
-import neqsim as java_neqsim
+
+# This is the java package, added to the python scope by "jpype.imports"
 
 logging.debug("NeqSim successfully imported")
-
-neqsim = java_neqsim

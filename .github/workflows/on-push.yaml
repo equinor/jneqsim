@@ -1,0 +1,9 @@
+on:
+  workflow_dispatch:
+  push:
+    tags-ignore:
+      - v*
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yaml

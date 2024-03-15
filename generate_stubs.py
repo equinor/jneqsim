@@ -1,5 +1,5 @@
 import stubgenj
 
-from jneqsim import neqsim
+from jneqsim.jvm_service import neqsim
 
-stubgenj.generateJavaStubs([neqsim], useStubsSuffix=False, outputDir="../old-stubs/old-stubs")
+stubgenj.generateJavaStubs([neqsim], useStubsSuffix=False, outputDir=".")
