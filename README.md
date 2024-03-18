@@ -4,20 +4,42 @@
 
 Python interface for the [NeqSim java package](https://equinor.github.io/neqsimhome/) with stubs. Java interface is created with [jpype](https://jpype.readthedocs.io/en/latest/index.html#) and stubs are generated with [stubgenj](https://gitlab.cern.ch/scripting-tools/stubgenj)
 
-![types.png](docs%2Fstatic%2Ftypes.png)
+## Demo
 
-### Dependencies
+![demo.gif](docs/demo.gif)
+
+
+## Example
+
+```python
+from jneqsim import neqsim
+
+
+def pressurize_gas():
+    inlet_fluid = neqsim.thermo.system.SystemSrkEos()
+    neqsim.thermo.system.SystemSrkEos()
+    thermo_ops = neqsim.thermodynamicOperations.ThermodynamicOperations(inlet_fluid)
+    inlet_fluid.addComponent("methane", 100.0)
+
+    inlet_fluid.setTemperature(10, "C")
+    inlet_fluid.setPressure(20, "bara")
+    inlet_fluid.setMultiPhaseCheck(True)
+    inlet_fluid.setSolidPhaseCheck("methane")
+
+    thermo_ops.TPflash()
+    thermo_ops.bubblePointTemperatureFlash()
+
+    inlet_fluid.initProperties()
+    enthalpy = inlet_fluid.getEnthalpy()
+
+    inlet_fluid.setPressure(1.0, "bara")
+    thermo_ops.PHflash(enthalpy)
+```
+
+## Dependencies
 
 - [jpype](https://jpype.readthedocs.io/en/latest/index.html#)
-- [stubgenj](https://gitlab.cern.ch/scripting-tools/stubgenj)
-- [NeqSim java package](https://equinor.github.io/neqsimhome/)
 
-### Prerequisites
-
-In order to run the commands described below, you need:
-
-- [Java Runtime Environment](https://www.java.com)
-- [Python](https://www.python.org/) (3.11 or newer)
 
 <a id="Contributing"></a>
 

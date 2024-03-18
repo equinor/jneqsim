@@ -1,0 +1,65 @@
+name: "Publish"
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      neqsim_jar_url:
+        description: "URL for downloading the latest Neqsim JAR"
+        required: true
+        type: string
+      version:
+        description: "Version to publish"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish package to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'poetry'
+
+      - name: Download JAR
+        run: |
+          echo "Downloading latest NeqSim JAR from ${{inputs.neqsim_jar_url}}"
+          wget --output-document "jneqsim/neqsim.jar" ${{inputs.neqsim_jar_url}}
+          echo "Wrote JAR to jneqsim/neqsim.jar"
+
+      - name: Install deps
+        run: poetry install --no-interaction
+
+      - name: Generate stubs
+        run: poetry run python ./generate_stubs.py
+
+      - name: Fixup module naming
+        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+
+      - name: Bump version
+        run: |
+          echo "Setting jNeqsim version to '${{inputs.version}}'"
+          poetry version ${{inputs.version}}
+
+      - name: Build
+        run: poetry build
+
+      - name: Install package and test it
+        run: |
+          cd tests
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install ../dist/jneqsim-*.tar.gz pytest
+          pytest
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

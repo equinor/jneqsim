@@ -1,12 +1,22 @@
 [tool.poetry]
 name = "jneqsim"
-version = "0.2.0"
-description = "A java virtual machine connected to NeqSim, with python stubs"
-authors = ["Jørgen <jenge@equinor.com>"]
+# Set in CI upon publishing
+version = "0.0.0"
+readme = "README.md"
+description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
+authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>"]
+maintainers = [
+  "Jørgen <jenge@equinor.com>",
+  "Stig Oskar <stoo@equinor.com>",
+]
+homepage = "https://github.com/equinor/jneqsim"
+repository = "https://github.com/equinor/jneqsim"
+keywords = ["neqsim"]
 license = "Apache-2.0"
+include = ["jneqsim/neqsim.jar", "docs/"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 JPype1 = "^1.4.1"
 
 [tool.poetry.group.dev.dependencies]
@@ -20,7 +30,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 119
-target-version = ['py311']
+target-version = ['py312']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -46,9 +56,8 @@ select = [
     "RUF", # ruff specific rules
 ]
 
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
-
