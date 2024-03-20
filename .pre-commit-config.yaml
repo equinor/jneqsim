@@ -24,9 +24,11 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 'v0.3.2'
     hooks:
+      - id: ruff-format
+        name: Code formatting
+
       - id: ruff
         name: Code linting
-        files: ^.*\.py$
         args:
           - --fix
 
