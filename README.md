@@ -2,7 +2,14 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Python interface for the [NeqSim java package](https://equinor.github.io/neqsimhome/) with stubs. Java interface is created with [jpype](https://jpype.readthedocs.io/en/latest/index.html#) and stubs are generated with [stubgenj](https://gitlab.cern.ch/scripting-tools/stubgenj)
+Python interface for the [NeqSim java package](https://equinor.github.io/neqsimhome/), with stubs. Java interface is created with [jpype](https://jpype.readthedocs.io/en/latest/index.html#), and stubs are generated with [stubgenj](https://gitlab.cern.ch/scripting-tools/stubgenj)
+
+
+## PYPI
+
+[https://pypi.org/project/jneqsim/](https://pypi.org/project/jneqsim/)
+> [!NOTE]
+> JNeqSim mirrors NeqSims versions
 
 ## Demo
 
