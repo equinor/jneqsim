@@ -1,8 +1,4 @@
-on:
-  workflow_dispatch:
-  push:
-    tags-ignore:
-      - v*
+on: [push]
 
 jobs:
   tests:
