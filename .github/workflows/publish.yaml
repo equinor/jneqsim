@@ -27,7 +27,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
           cache: 'poetry'
 
       - name: Download JAR
@@ -51,7 +51,8 @@ jobs:
           poetry version ${{inputs.version}}
 
       - name: Build
-        run: poetry build
+        # delete .gitignore. If not the ignored files will not be added to the package
+        run: rm .gitignore && poetry build
 
       - name: Install package and test it
         run: |

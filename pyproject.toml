@@ -14,10 +14,11 @@ repository = "https://github.com/equinor/jneqsim"
 keywords = ["neqsim"]
 license = "Apache-2.0"
 include = ["jneqsim/neqsim.jar", "docs/"]
+exclude = ["jneqsim/jpype-stubs"]
 
 [tool.poetry.dependencies]
-python = "^3.12"
-JPype1 = "^1.4.1"
+python = "^3.9"
+JPype1 = "^1.5.0"
 
 [tool.poetry.group.dev.dependencies]
 stubgenj = "^0.2.12"
@@ -29,7 +30,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py39"
 line-length = 120
 
 select = [
