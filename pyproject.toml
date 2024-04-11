@@ -13,7 +13,7 @@ homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
 keywords = ["neqsim"]
 license = "Apache-2.0"
-include = ["jneqsim/neqsim.jar", "docs/"]
+include = ["jneqsim/neqsim-Java*.jar", "docs/"]
 exclude = ["jneqsim/jpype-stubs"]
 
 [tool.poetry.dependencies]
@@ -31,9 +31,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 target-version = "py39"
-line-length = 120
+line-length = 119
 
-select = [
+lint.select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
     "F",  # pyflakes
@@ -44,6 +44,8 @@ select = [
     "UP", # automatically upgrade syntax for newer versions of the language
     "RUF", # ruff specific rules
 ]
-[tool.ruff.per-file-ignores]
+
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]

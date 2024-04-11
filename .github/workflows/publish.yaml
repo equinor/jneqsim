@@ -33,8 +33,11 @@ jobs:
       - name: Download JAR
         run: |
           echo "Downloading latest NeqSim JAR from ${{inputs.neqsim_jar_url}}"
-          wget --output-document "jneqsim/neqsim.jar" ${{inputs.neqsim_jar_url}}
-          echo "Wrote JAR to jneqsim/neqsim.jar"
+          VERSION=${{inputs.version}}
+          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
+          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
+          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
+          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
 
       - name: Install deps
         run: poetry install --no-interaction
