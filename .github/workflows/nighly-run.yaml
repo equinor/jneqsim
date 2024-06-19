@@ -52,3 +52,12 @@ jobs:
     with:
       neqsim_jar_url: "${{ needs.check-neqsim-release.outputs.url }}"
       version: ${{ needs.check-neqsim-release.outputs.version }}
+  
+  # Keeps the scheduled workflow from becoming disabled because of "no repo activity"
+  workflow-keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: liskin/gh-workflow-keepalive@f72ff1a1336129f29bf0166c0fd0ca6cf1bcb38c # v1.2.1
