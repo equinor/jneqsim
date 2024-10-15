@@ -3,8 +3,7 @@ from jneqsim import neqsim
 
 def test_pressurize_gas():
     inlet_fluid = neqsim.thermo.system.SystemSrkEos()
-    neqsim.thermo.system.SystemSrkEos()
-    thermo_ops = neqsim.thermodynamicOperations.ThermodynamicOperations(inlet_fluid)
+    thermo_ops = neqsim.thermodynamicoperations.ThermodynamicOperations(inlet_fluid)
     inlet_fluid.addComponent("methane", 100.0)
 
     inlet_fluid.setTemperature(10, "C")
