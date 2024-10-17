@@ -29,4 +29,4 @@ if not jpype.isJVMStarted():
 import jpype.imports  # noqa
 
 # This is the java package, added to the python scope by "jpype.imports"
-import neqsim  # noqa (ruff wants to remove this line, since it's not used)
+neqsim = jpype.JPackage("neqsim")
