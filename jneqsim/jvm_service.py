@@ -6,9 +6,9 @@ import jpype
 def get_neqsim_jar_path(version: tuple[int, int, int]) -> str:
     if version[0] == 1 and version[1] == 8:
         jar_path = Path(__file__).parent / "neqsim-Java8.jar"
-    elif 11 <= version[0] <= 21:
+    elif 11 <= version[0] < 21:
         jar_path = Path(__file__).parent / "neqsim-Java11.jar"
-    elif version[0] == 21:
+    elif version[0] >= 21:
         jar_path = Path(__file__).parent / "neqsim-Java21.jar"
     else:
         raise RuntimeError(
