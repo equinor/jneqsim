@@ -50,7 +50,6 @@ jobs:
     if: ${{ needs.check-neqsim-release.outputs.url != 'none' }}
     uses: ./.github/workflows/publish.yaml
     with:
-      neqsim_jar_url: "${{ needs.check-neqsim-release.outputs.url }}"
       version: ${{ needs.check-neqsim-release.outputs.version }}
   
   # Keeps the scheduled workflow from becoming disabled because of "no repo activity"

@@ -1,12 +1,13 @@
 name: "Publish"
 on:
   workflow_dispatch:
-  workflow_call:
     inputs:
-      neqsim_jar_url:
-        description: "URL for downloading the latest Neqsim JAR"
+      version:
+        description: "Version to publish"
         required: true
         type: string
+  workflow_call:
+    inputs:
       version:
         description: "Version to publish"
         required: true
@@ -32,7 +33,6 @@ jobs:
 
       - name: Download JAR
         run: |
-          echo "Downloading latest NeqSim JAR from ${{inputs.neqsim_jar_url}}"
           VERSION=${{inputs.version}}
           wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
           wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
