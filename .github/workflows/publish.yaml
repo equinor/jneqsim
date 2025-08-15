@@ -3,8 +3,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish"
+        description: "Version of Neqsim to publish"
         required: true
+        type: string
+      pypi_version:
+        description: "Version to publish jNeqsim to PyPI as"
+        required: false
         type: string
   workflow_call:
     inputs:
@@ -50,8 +54,9 @@ jobs:
 
       - name: Bump version
         run: |
-          echo "Setting jNeqsim version to '${{inputs.version}}'"
-          poetry version ${{inputs.version}}
+          VERSION="${{ inputs.pypi_version || inputs.version }}"
+          echo "Setting jNeqsim version to '$VERSION'"
+          poetry version "$VERSION"
 
       - name: Build
         # delete .gitignore. If not the ignored files will not be added to the package
