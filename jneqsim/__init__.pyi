@@ -1,3 +1,1 @@
-from jneqsim.neqsim import __module_protocol__
-
-neqsim = __module_protocol__
+from jneqsim.neqsim import *  # noqa: F403
