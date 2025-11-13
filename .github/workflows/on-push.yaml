@@ -1,5 +1,7 @@
 on: [push]
 
+permissions:
+  contents: read
 jobs:
   tests:
     uses: ./.github/workflows/tests.yaml
