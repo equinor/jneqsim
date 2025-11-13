@@ -49,11 +49,15 @@ jobs:
   publish:
     permissions:
       contents: write
+      id-token: write
     needs: [check-neqsim-release, tests]
     if: ${{ needs.check-neqsim-release.outputs.url != 'none' }}
     uses: ./.github/workflows/publish.yaml
     with:
       version: ${{ needs.check-neqsim-release.outputs.version }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   
   # Keeps the scheduled workflow from becoming disabled because of "no repo activity"
   workflow-keepalive:
