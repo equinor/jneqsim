@@ -3,7 +3,8 @@ on:
   schedule:
     # Runs at 03:00 UTC on every day-of-week
     - cron: '0 3 * * *'
-
+permissions:
+  contents: read
 jobs:
   check-neqsim-release:
     runs-on: ubuntu-latest
@@ -46,6 +47,8 @@ jobs:
     uses: ./.github/workflows/tests.yaml
 
   publish:
+    permissions:
+      contents: write
     needs: [check-neqsim-release, tests]
     if: ${{ needs.check-neqsim-release.outputs.url != 'none' }}
     uses: ./.github/workflows/publish.yaml
