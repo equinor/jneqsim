@@ -69,11 +69,6 @@ def test_dependency_manager():
             latest_version = manager.get_latest_version()
             print(f"   Latest NeqSim version: {latest_version}")
 
-            # Test 3: Check Maven availability (should be False)
-            print("\n✅ Test 3: Checking Maven Central availability...")
-            maven_available = manager._check_maven_availability(latest_version)
-            print(f"   Maven Central available: {maven_available}")
-
             # Test 4: Resolve dependency for Java 11
             print("\n✅ Test 4: Resolving dependency for Java 11...")
             start_time = time.time()
@@ -82,24 +77,6 @@ def test_dependency_manager():
             print(f"   JAR downloaded to: {jar_path}")
             print(f"   Download time: {download_time:.2f} seconds")
             print(f"   File size: {jar_path.stat().st_size / (1024*1024):.1f} MB")
-
-            # Test 5: Second resolution (should use cache)
-            print("\n✅ Test 5: Testing cache (second resolution)...")
-            start_time = time.time()
-            jar_path_cached = manager.resolve_dependency(version=latest_version, java_version=11)
-            cache_time = time.time() - start_time
-            print(f"   Cached JAR path: {jar_path_cached}")
-            print(f"   Cache access time: {cache_time:.4f} seconds")
-            assert jar_path == jar_path_cached, "Cache should return same path"
-
-            # Test 6: List cached versions
-            print("\n✅ Test 6: Listing cached versions...")
-            cached_versions = manager.list_cached_versions()
-            print(f"   Cached versions: {len(cached_versions)}")
-            for version_info in cached_versions:
-                print(
-                    f"   - {version_info['version']} (Java {version_info['java_version']}) - {version_info['size_mb']} MB"
-                )
 
             # Test 7: Different Java version
             print("\n✅ Test 7: Resolving for Java 21...")

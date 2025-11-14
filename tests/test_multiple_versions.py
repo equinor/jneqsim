@@ -42,14 +42,6 @@ def test_multiple_java_versions():
         unique_jars = set(resolved_jars.values())
         print(f"   Unique JAR files: {len(unique_jars)}")
 
-        # List cached versions
-        cached_versions = manager.list_cached_versions()
-        print("\n📦 Cache contents:")
-        for version_info in cached_versions:
-            print(
-                f"   - NeqSim {version_info['version']} (Java {version_info.get('java_version', 'N/A')}) - {version_info['size_mb']} MB"
-            )
-
         print("\n🎉 Multi-version test completed!")
         return True
 

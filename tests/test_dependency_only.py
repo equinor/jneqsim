@@ -31,16 +31,6 @@ def test_dependency_manager_only():
         latest_version = manager.get_latest_version()
         print(f"✅ Latest version: {latest_version}")
 
-        # Test Maven availability check
-        print("Checking Maven Central availability...")
-        maven_available = manager._check_maven_availability(latest_version)
-        print(f"✅ Maven Central available: {maven_available}")
-
-        # Test cache directory creation
-        print("Testing cache directory...")
-        manager.cache_dir.mkdir(parents=True, exist_ok=True)
-        print(f"✅ Cache directory created: {manager.cache_dir}")
-
         # Test dependency resolution (this will download the JAR)
         print("Resolving dependency for Java 11...")
         print("(This may take a moment to download the JAR file...)")
@@ -50,18 +40,6 @@ def test_dependency_manager_only():
         print(f"   Path: {jar_path}")
         print(f"   Exists: {jar_path.exists()}")
         print(f"   Size: {jar_path.stat().st_size / (1024*1024):.1f} MB")
-
-        # Test cache hit (second resolution should be fast)
-        print("Testing cache (second resolution)...")
-        jar_path_2 = manager.resolve_dependency(version=latest_version, java_version=11)
-        assert jar_path == jar_path_2, "Cache should return same path"
-        print("✅ Cache working correctly")
-
-        # Test listing cached versions
-        cached = manager.list_cached_versions()
-        print(f"✅ Cached versions: {len(cached)}")
-        for item in cached:
-            print(f"   - {item['version']} (Java {item['java_version']}) - {item['size_mb']} MB")
 
         return True
 
@@ -84,10 +62,8 @@ if __name__ == "__main__":
         print("🎉 Dependency management test passed!")
         print("\nThe new system successfully:")
         print("  ✅ Downloads NeqSim JARs from GitHub")
-        print("  ✅ Caches downloaded files")
         print("  ✅ Verifies file integrity")
         print("  ✅ Handles different Java versions")
-        print("  ✅ Checks Maven Central availability")
         print("\nYour package is now much smaller and dependencies")
         print("are resolved at runtime instead of build time!")
     else:

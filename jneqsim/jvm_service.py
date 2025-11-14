@@ -5,8 +5,6 @@ This module handles JVM initialization and NeqSim dependency resolution
 using the NeqSimDependencyManager for runtime dependency management.
 """
 
-from typing import Tuple
-
 try:
     import jpype
 
@@ -18,7 +16,7 @@ except ImportError:
 from .dependency_manager import NeqSimDependencyManager
 
 
-def get_neqsim_jar_path(version: Tuple[int, int, int]) -> str:
+def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
     """
     Get NeqSim JAR path using enhanced dependency resolution
 
