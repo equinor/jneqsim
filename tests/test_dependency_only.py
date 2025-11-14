@@ -6,8 +6,8 @@ Test the dependency manager without importing jvm_service
 import sys
 from pathlib import Path
 
-# Add current directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def test_dependency_manager_only():
@@ -24,7 +24,6 @@ def test_dependency_manager_only():
 
         # Test configuration loading
         print("✅ Configuration loaded successfully")
-        print(f"   Cache directory: {manager.cache_dir}")
 
         # Test latest version retrieval
         print("Getting latest NeqSim version...")

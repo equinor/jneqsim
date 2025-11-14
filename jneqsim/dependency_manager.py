@@ -1,8 +1,7 @@
 """
 NeqSim Dependency Manager
 
-Handles resolution, downloading, and caching of NeqSim Java dependencies
-with support for both Maven Central and GitHub releases.
+Handles resolution and downloading of NeqSim Java dependencies from GitHub releases.
 """
 
 import json
@@ -16,7 +15,7 @@ import yaml
 
 
 class NeqSimDependencyManager:
-    """Manages NeqSim JAR dependencies with Maven and GitHub support"""
+    """Manages NeqSim JAR dependencies from GitHub releases"""
 
     def __init__(self, config_path: Optional[Path] = None):
         """
@@ -29,10 +28,6 @@ class NeqSimDependencyManager:
             config_path = Path(__file__).parent / "dependencies.yaml"
 
         self.config = self._load_config(config_path)
-        self.cache_dir = Path(self.config["cache"]["directory"]).expanduser()
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-
-        self.manifest_path = self.cache_dir / "manifest.json"
         self.logger = self._setup_logging()
 
     def _load_config(self, config_path: Path) -> dict:
@@ -109,7 +104,10 @@ class NeqSimDependencyManager:
         # Validate URL for security
         self._validate_url(url, {"github.com"})
 
-        cached_jar = self.cache_dir / f"neqsim-{version}-java{java_version}.jar"
+        # Create temporary file to download to
+        import tempfile
+        temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
+        downloaded_jar = temp_dir / jar_filename
 
         try:
             if self.config["logging"]["show_progress"]:
@@ -118,9 +116,9 @@ class NeqSimDependencyManager:
             with urllib.request.urlopen(url) as response:  # noqa: S310
                 content = response.read()
 
-            cached_jar.write_bytes(content)
-            self.logger.info(f"Downloaded from GitHub: {cached_jar.name}")
-            return cached_jar
+            downloaded_jar.write_bytes(content)
+            self.logger.info(f"Downloaded from GitHub: {downloaded_jar.name}")
+            return downloaded_jar
 
         except Exception as e:
             self.logger.error(f"Failed to download from GitHub: {e}")

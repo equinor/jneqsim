@@ -8,10 +8,9 @@ We have successfully migrated jNeqSim from bundled JAR files to **runtime depend
 
 - **📦 Smaller package size**: No more 50MB+ JAR files bundled in wheels
 - **⚡ Faster installs**: Package downloads and installs much faster  
-- **🔄 Better caching**: Dependencies cached locally, shared between projects
 - **🎯 Version flexibility**: Easy to specify NeqSim versions
 - **🏗️ Simpler CI/CD**: No JAR downloading during builds
-- **🔮 Future-proof**: Ready for Maven Central when NeqSim publishes there
+- **🔮 Streamlined architecture**: Direct GitHub downloads without complex caching
 
 ## How It Works
 
@@ -23,9 +22,9 @@ We have successfully migrated jNeqSim from bundled JAR files to **runtime depend
 
 ### After (New System) 
 1. Dependencies resolved at **runtime** when first imported
-2. JARs downloaded to user cache (`~/.cache/jneqsim/`)
-3. Subsequent uses load from cache (very fast)
-4. Support for multiple Java versions and NeqSim versions
+2. JARs downloaded directly from GitHub releases to temporary locations
+3. Support for multiple Java versions and NeqSim versions
+4. Simple, straightforward download process
 
 ## Configuration
 
@@ -35,15 +34,8 @@ Dependencies are configured in `jneqsim/dependencies.yaml`:
 neqsim:
   version: "latest"  # or specific version like "3.1.0"
   
+  # GitHub Releases source
   sources:
-    # Maven Central (checked first when available)
-    maven:
-      enabled: true
-      coordinates:
-        - groupId: "no.ntnu.neqsim"
-          artifactId: "neqsim-core"
-    
-    # GitHub Releases (current primary source)
     github:
       enabled: true
       repository: "equinor/neqsim"
@@ -53,11 +45,9 @@ neqsim:
         java11: "neqsim-{version}.jar"
         java21: "neqsim-{version}-Java21.jar"
 
-cache:
-  directory: "~/.cache/jneqsim"
-  verify_integrity: true
-  max_size_mb: 500
-  ttl_days: 30
+logging:
+  level: "INFO"
+  show_progress: true
 ```
 
 ## Usage (No Changes Required!)
@@ -72,7 +62,7 @@ system = neqsim.thermo.system.SystemSrkEos()
 system.addComponent("methane", 100.0)
 ```
 
-### Advanced Usage (New Capabilities)
+### Advanced Usage
 
 ```python
 from jneqsim.dependency_manager import NeqSimDependencyManager
@@ -82,13 +72,7 @@ manager = NeqSimDependencyManager()
 
 # Use specific version
 jar_path = manager.resolve_dependency(version="3.0.0", java_version=11)
-
-# Clear cache
-manager.clear_cache()
-
-# List cached versions
-cached = manager.list_cached_versions()
-print(cached)
+print(f"JAR downloaded to: {jar_path}")
 ```
 
 ## Implementation Details
@@ -97,9 +81,9 @@ print(cached)
 
 1. **`NeqSimDependencyManager`** (`jneqsim/dependency_manager.py`)
    - Handles dependency resolution
-   - Manages local cache
-   - Supports Maven Central + GitHub fallback
-   - Integrity verification with SHA-256
+   - Downloads JARs from GitHub releases
+   - Supports multiple Java versions
+   - URL validation for security
 
 2. **Enhanced JVM Service** (`jneqsim/jvm_service.py`)
    - Uses dependency manager for JAR resolution
@@ -108,38 +92,30 @@ print(cached)
 
 3. **Configuration** (`jneqsim/dependencies.yaml`)
    - YAML-based configuration
-   - Support for multiple dependency sources
-   - Caching and logging configuration
+   - GitHub releases configuration
+   - Logging configuration
 
 ### Dependency Resolution Flow
 
-1. **Check cache** - Look for already downloaded JAR
-2. **Try Maven Central** - If enabled and available
-3. **Fall back to GitHub** - Download from releases
-4. **Verify integrity** - SHA-256 checksum validation
-5. **Update cache** - Store for future use
-
-### Cache Management
-
-- **Location**: `~/.cache/jneqsim/`
-- **TTL**: Configurable expiration (default 30 days)
-- **Size limits**: Automatic cleanup of old files
-- **Integrity**: SHA-256 verification on cache hits
-- **Manifest**: JSON file tracking cached dependencies
+1. **Check version** - Determine NeqSim version to use
+2. **Resolve JAR type** - Select appropriate JAR for Java version
+3. **Download from GitHub** - Download JAR from GitHub releases
+4. **Validate security** - URL validation before download
+5. **Return path** - Provide path to downloaded JAR
 
 ## Migration Impact
 
 ### For Users
 - ✅ **No code changes required** - API remains the same
 - ✅ **Faster installation** - Much smaller package
-- ✅ **First-run setup** - Automatic dependency download
-- ✅ **Better performance** - Cached dependencies load instantly
+- ✅ **Automatic setup** - Dependency download on first use
+- ✅ **Simple architecture** - Direct downloads when needed
 
 ### For Developers  
 - ✅ **Simpler workflows** - No JAR downloading in CI/CD
 - ✅ **Easier testing** - Test with different NeqSim versions
 - ✅ **Better debugging** - Clear dependency resolution logs
-- ✅ **Future flexibility** - Easy to add new dependency sources
+- ✅ **Streamlined code** - Simplified dependency manager
 
 ### For CI/CD
 - ✅ **Faster builds** - No JAR downloads during build
@@ -165,10 +141,11 @@ print(cached)
 
 ## Future Enhancements
 
-When NeqSim publishes to Maven Central:
-1. Update `dependencies.yaml` with correct coordinates
-2. Enable Maven source in configuration  
-3. Automatic fallback still available
+Potential future improvements:
+1. Add local caching for frequently used JARs
+2. Support for Maven Central when NeqSim is published there
+3. Automatic cleanup of temporary files
+4. Version pinning and dependency locking
 
 ## Testing
 
@@ -184,28 +161,22 @@ python test_dependency_management.py
 
 ## Troubleshooting
 
-### Clear Cache
-```python
-from jneqsim.dependency_manager import NeqSimDependencyManager
-manager = NeqSimDependencyManager()
-manager.clear_cache()
-```
-
-### Check Cache Status
-```python
-manager = NeqSimDependencyManager()
-cached = manager.list_cached_versions()
-for item in cached:
-    print(f"{item['version']} - {item['size_mb']} MB")
-```
-
 ### Manual Configuration
 Edit `jneqsim/dependencies.yaml` to customize:
 - NeqSim version
-- Cache location
-- Enable/disable Maven checking
+- GitHub repository settings
 - Logging levels
+
+### Check Download Status
+```python
+from jneqsim.dependency_manager import NeqSimDependencyManager
+manager = NeqSimDependencyManager()
+
+# Test download
+jar_path = manager.resolve_dependency()
+print(f"Downloaded JAR to: {jar_path}")
+```
 
 ---
 
-🎉 **Migration Complete!** Your Python package is now much more efficient with runtime dependency management.
+🎉 **Migration Complete!** Your Python package is now much more efficient with simplified runtime dependency management.

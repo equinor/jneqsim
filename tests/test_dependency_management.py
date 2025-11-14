@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 # Add the package to Python path for testing
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from jneqsim.dependency_manager import NeqSimDependencyManager
 
@@ -22,36 +22,28 @@ def test_dependency_manager():
     print("🧪 Testing NeqSim Dependency Manager")
     print("=" * 50)
 
-    # Create a temporary cache directory for testing
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_cache = Path(temp_dir) / "test_cache"
-
-        # Create a test config
-        test_config = {
-            "neqsim": {
-                "version": "latest",
-                "sources": {
-                    "maven": {
-                        "enabled": True,
-                        "coordinates": [{"groupId": "no.ntnu.neqsim", "artifactId": "neqsim-core"}],
-                    },
-                    "github": {
-                        "enabled": True,
-                        "repository": "equinor/neqsim",
-                        "base_url": "https://github.com/equinor/neqsim/releases/download",
-                        "assets": {
-                            "java8": "neqsim-{version}-Java8.jar",
-                            "java11": "neqsim-{version}.jar",
-                            "java21": "neqsim-{version}-Java21.jar",
-                        },
+    # Create a test config
+    test_config = {
+        "neqsim": {
+            "version": "latest",
+            "sources": {
+                "github": {
+                    "enabled": True,
+                    "repository": "equinor/neqsim",
+                    "base_url": "https://github.com/equinor/neqsim/releases/download",
+                    "assets": {
+                        "java8": "neqsim-{version}-Java8.jar",
+                        "java11": "neqsim-{version}.jar",
+                        "java21": "neqsim-{version}-Java21.jar",
                     },
                 },
             },
-            "cache": {"directory": str(temp_cache), "verify_integrity": True, "max_size_mb": 500, "ttl_days": 30},
-            "logging": {"level": "INFO", "show_progress": True},
-        }
+        },
+        "logging": {"level": "INFO", "show_progress": True},
+    }
 
-        # Write test config
+    # Write test config
+    with tempfile.TemporaryDirectory() as temp_dir:
         config_file = Path(temp_dir) / "test_dependencies.yaml"
         import yaml
 
@@ -62,15 +54,15 @@ def test_dependency_manager():
             # Test 1: Initialize manager
             print("✅ Test 1: Initializing dependency manager...")
             manager = NeqSimDependencyManager(config_file)
-            print(f"   Cache directory: {manager.cache_dir}")
+            print("   Manager initialized successfully")
 
             # Test 2: Get latest version
             print("\n✅ Test 2: Getting latest version...")
             latest_version = manager.get_latest_version()
             print(f"   Latest NeqSim version: {latest_version}")
 
-            # Test 4: Resolve dependency for Java 11
-            print("\n✅ Test 4: Resolving dependency for Java 11...")
+            # Test 3: Resolve dependency for Java 11
+            print("\n✅ Test 3: Resolving dependency for Java 11...")
             start_time = time.time()
             jar_path = manager.resolve_dependency(version=latest_version, java_version=11)
             download_time = time.time() - start_time
@@ -78,8 +70,8 @@ def test_dependency_manager():
             print(f"   Download time: {download_time:.2f} seconds")
             print(f"   File size: {jar_path.stat().st_size / (1024*1024):.1f} MB")
 
-            # Test 7: Different Java version
-            print("\n✅ Test 7: Resolving for Java 21...")
+            # Test 4: Different Java version
+            print("\n✅ Test 4: Resolving for Java 21...")
             jar_path_21 = manager.resolve_dependency(version=latest_version, java_version=21)
             print(f"   Java 21 JAR: {jar_path_21}")
             assert jar_path != jar_path_21, "Different Java versions should have different JARs"
@@ -112,12 +104,15 @@ def test_jvm_service():
         neqsim = jvm_service.neqsim
         print(f"   NeqSim package: {neqsim}")
 
-        # Test basic functionality
+        # Test basic functionality (if neqsim is available)
         print("\n✅ Test 3: Testing basic NeqSim functionality...")
-        # Create a simple system to test
-        system = neqsim.thermo.system.SystemSrkEos()
-        system.addComponent("methane", 1.0)
-        print("   Created simple methane system successfully")
+        if neqsim is not None:
+            # Create a simple system to test
+            system = neqsim.thermo.system.SystemSrkEos()
+            system.addComponent("methane", 1.0)
+            print("   Created simple methane system successfully")
+        else:
+            print("   Skipping NeqSim functionality test (JPype not available)")
 
         print("\n🎉 All JVM service tests passed!")
         return True
@@ -150,9 +145,8 @@ def main():
         print("🎉 All tests passed! The new dependency management system is working correctly.")
         print("\n📋 Summary of changes:")
         print("   ✅ Dependencies are now resolved at runtime")
-        print("   ✅ JAR files are cached in ~/.cache/jneqsim")
+        print("   ✅ JAR files are downloaded from GitHub releases")
         print("   ✅ Support for multiple Java versions")
-        print("   ✅ Automatic fallback from Maven to GitHub")
         print("   ✅ Package size significantly reduced")
     else:
         print("❌ Some tests failed. Please check the errors above.")
