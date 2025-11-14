@@ -1,4 +1,4 @@
-from jneqsim import neqsim
+from jneqsim_test import neqsim
 
 
 def test_pressurize_gas():
