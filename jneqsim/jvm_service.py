@@ -1,26 +1,21 @@
-from pathlib import Path
-
 import jpype
-
+import importlib.resources
 
 def get_neqsim_jar_path(version: tuple[int, int, int]) -> str:
     if version[0] == 1 and version[1] == 8:
-        jar_path = Path(__file__).parent / "neqsim-Java8.jar"
+        import jneqsim_java8  # type: ignore
+        with importlib.resources.path("jneqsim_java8", "neqsim-Java8.jar") as jar_path:
+            return str(jar_path)
     elif 11 <= version[0] < 21:
-        jar_path = Path(__file__).parent / "neqsim-Java11.jar"
+        import jneqsim_java11  # type: ignore
+        with importlib.resources.path("jneqsim_java11", "neqsim-Java11.jar") as jar_path:
+            return str(jar_path)
     elif version[0] >= 21:
-        jar_path = Path(__file__).parent / "neqsim-Java21.jar"
+        import jneqsim_java21  # type: ignore
+        with importlib.resources.path("jneqsim_java21", "neqsim-Java21.jar") as jar_path:
+            return str(jar_path)
     else:
-        raise RuntimeError(
-            "Unsupported JVM version. jneqsim requires java8, java11, or java21."
-            + f"Got {version[0]}.{version[1]}.{version[2]}"
-        )
-
-    if not jar_path.is_file():
-        raise FileNotFoundError("Missing required neqsim JAR! Bad build?")
-
-    return str(jar_path)
-
+        raise RuntimeError("Unsupported JVM version...")
 
 if not jpype.isJVMStarted():
     jpype.startJVM()

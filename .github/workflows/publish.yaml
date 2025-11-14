@@ -1,117 +1,280 @@
-name: "Publish"
+# name: "Publish"
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       version:
+#         description: "Version of Neqsim to publish"
+#         required: true
+#         type: string
+#       pypi_version:
+#         description: "Version to publish jNeqsim to PyPI as"
+#         required: false
+#         type: string
+#   workflow_call:
+#     inputs:
+#       version:
+#         description: "Version to publish"
+#         required: true
+#         type: string
+#     secrets:
+#       SLACK_WEBHOOK_URL:
+#         required: false
+
+# jobs:
+#   publish:
+#     name: Publish package to PyPI
+#     runs-on: ubuntu-latest
+#     permissions:
+#       id-token: write
+#     steps:
+#       - uses: actions/checkout@master
+
+#       - name: Install Poetry
+#         run: pipx install poetry
+
+#       - name: Setup Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.10"
+#           cache: "poetry"
+
+#       # - name: Download JAR
+#       #   run: |
+#       #     VERSION=${{inputs.version}}
+#       #     wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
+#       #     wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
+#       #     wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
+#       #     echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
+
+#       - name: Install deps
+#         run: poetry install --no-interaction
+
+#       - name: Generate stubs
+#         run: poetry run python ./generate_stubs.py
+
+#       - name: Fixup module naming
+#         run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+
+#       - name: Bump version
+#         run: |
+#           VERSION="${{ inputs.pypi_version || inputs.version }}"
+#           echo "Setting jNeqsim version to '$VERSION'"
+#           poetry version "$VERSION"
+
+#       - name: Build
+#         # delete .gitignore. If not the ignored files will not be added to the package
+#         run: rm .gitignore && poetry build
+
+#       - name: Install package and test it
+#         run: |
+#           cd tests
+#           python -m venv .venv
+#           source .venv/bin/activate
+#           pip install ../dist/jneqsim-*.tar.gz pytest
+#           pytest
+
+#       - name: Publish package distributions to PyPI
+#         uses: pypa/gh-action-pypi-publish@release/v1
+#         with:
+#           attestations: false
+
+#       - name: Notify publish success to Slack
+#         if: ${{ success() }}
+#         uses: slackapi/slack-github-action@v2.1.1
+#         with:
+#           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+#           webhook-type: incoming-webhook
+#           payload: |
+#             {
+#               "blocks": [
+#                 {
+#                   "type": "section",
+#                   "text": {
+#                     "type": "mrkdwn",
+#                     "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
+#                   }
+#                 }
+#               ]
+#             }
+
+#       - name: Notify publish failure to Slack
+#         if: ${{ failure() || cancelled() }}
+#         uses: slackapi/slack-github-action@v2.1.1
+#         with:
+#           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+#           webhook-type: incoming-webhook
+#           payload: |
+#             {
+#               "blocks": [
+#                 {
+#                   "type": "section",
+#                   "text": {
+#                     "type": "mrkdwn",
+#                     "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+#                   }
+#                 }
+#               ]
+#             }
+
+
+
+
+
+name: "Publish JAR Packages"
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version of Neqsim to publish"
+        description: "NeqSim version to package"
         required: true
         type: string
-      pypi_version:
-        description: "Version to publish jNeqsim to PyPI as"
-        required: false
-        type: string
-  workflow_call:
-    inputs:
-      version:
-        description: "Version to publish"
-        required: true
-        type: string
-    secrets:
-      SLACK_WEBHOOK_URL:
-        required: false
 
 jobs:
-  publish:
-    name: Publish package to PyPI
+  publish-java8:
+    name: Publish Java 8 JAR package
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@master
-
-      - name: Install Poetry
-        run: pipx install poetry
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-          cache: "poetry"
 
-      - name: Download JAR
+      - name: Install build tools
+        run: pip install build hatch
+
+      - name: Download Java 8 JAR
         run: |
-          VERSION=${{inputs.version}}
-          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
-          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
-          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
-          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
+          mkdir -p jneqsim/jneqsim-java8/jneqsim_java8
+          wget -O jneqsim/jneqsim-java8/jneqsim_java8/neqsim-Java8.jar "https://github.com/equinor/neqsim/releases/download/v${{ inputs.version }}/neqsim-${{ inputs.version }}-Java8.jar"
 
-      - name: Install deps
-        run: poetry install --no-interaction
-
-      - name: Generate stubs
-        run: poetry run python ./generate_stubs.py
-
-      - name: Fixup module naming
-        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
-
-      - name: Bump version
+      - name: Update version in pyproject.toml
         run: |
-          VERSION="${{ inputs.pypi_version || inputs.version }}"
-          echo "Setting jNeqsim version to '$VERSION'"
-          poetry version "$VERSION"
+          cd jneqsim/jneqsim-java8
+          sed -i 's/version = "0.0.1"/version = "${{ inputs.version }}"/' pyproject.toml
 
-      - name: Build
-        # delete .gitignore. If not the ignored files will not be added to the package
-        run: rm .gitignore && poetry build
-
-      - name: Install package and test it
+      - name: Build Java 8 package
         run: |
-          cd tests
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install ../dist/jneqsim-*.tar.gz pytest
-          pytest
+          cd jneqsim/jneqsim-java8
+          python -m build
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          attestations: false
+      - name: Publish Java 8 to Test PyPI
+        run: |
+          cd jneqsim/jneqsim-java8
+          hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
 
-      - name: Notify publish success to Slack
-        if: ${{ success() }}
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
-                  }
-                }
-              ]
-            }
+  publish-java11:
+    name: Publish Java 11 JAR package
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Notify publish failure to Slack
-        if: ${{ failure() || cancelled() }}
-        uses: slackapi/slack-github-action@v2.1.1
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                  }
-                }
-              ]
-            }
+          python-version: "3.10"
+
+      - name: Install build tools
+        run: pip install build hatch
+
+      - name: Download Java 11 JAR
+        run: |
+          mkdir -p jneqsim/jneqsim-java11/jneqsim_java11
+          wget -O jneqsim/jneqsim-java11/jneqsim_java11/neqsim-Java11.jar "https://github.com/equinor/neqsim/releases/download/v${{ inputs.version }}/neqsim-${{ inputs.version }}.jar"
+
+      - name: Update version in pyproject.toml
+        run: |
+          cd jneqsim/jneqsim-java11
+          sed -i 's/version = "0.0.1"/version = "${{ inputs.version }}"/' pyproject.toml
+
+      - name: Build Java 11 package
+        run: |
+          cd jneqsim/jneqsim-java11
+          python -m build
+
+      - name: Publish Java 11 to Test PyPI
+        run: |
+          cd jneqsim/jneqsim-java11
+          hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+
+  publish-java21:
+    name: Publish Java 21 JAR package
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install build tools
+        run: pip install build hatch
+
+      - name: Download Java 21 JAR
+        run: |
+          mkdir -p jneqsim/jneqsim-java21/jneqsim_java21
+          wget -O jneqsim/jneqsim-java21/jneqsim_java21/neqsim-Java21.jar "https://github.com/equinor/neqsim/releases/download/v${{ inputs.version }}/neqsim-${{ inputs.version }}-Java21.jar"
+
+      - name: Update version in pyproject.toml
+        run: |
+          cd jneqsim/jneqsim-java21
+          sed -i 's/version = "0.0.1"/version = "${{ inputs.version }}"/' pyproject.toml
+
+      - name: Build Java 21 package
+        run: |
+          cd jneqsim/jneqsim-java21
+          python -m build
+
+      - name: Publish Java 21 to Test PyPI
+        run: |
+          cd jneqsim/jneqsim-java21
+          hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+
+
+  publish-testpkg:
+      name: Publish jneqsim_test to TestPyPI
+      runs-on: ubuntu-latest
+      permissions:
+        id-token: write
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: "3.10"
+
+        - name: Install build tools
+          run: pip install build hatch
+
+        - name: Update version in pyproject.toml
+          run: |
+            sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml
+
+        - name: Build jneqsim_test
+          run: |
+            python -m build
+
+        - name: Publish jneqsim_test to TestPyPI
+          run: |
+            hatch publish -r test
+          env:
+            HATCH_INDEX_USER: __token__
+            HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}

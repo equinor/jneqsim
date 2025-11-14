@@ -1,0 +1,129 @@
+name: "Publish JAR Packages"
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "NeqSim version to package"
+        required: true
+        type: string
+
+jobs:
+  publish-java8:
+    name: Publish Java 8 JAR package
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install build tools
+        run: pip install build hatch
+
+      - name: Download Java 8 JAR
+        run: |
+          VERSION=${{ inputs.version }}
+          mkdir -p jneqsim-java8/jneqsim_java8
+          wget -O "jneqsim-java8/jneqsim_java8/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
+
+      - name: Update version in pyproject.toml
+        run: |
+          cd jneqsim-java8
+          sed -i 's/version = "0.0.1"/version = "${{ inputs.version }}"/' pyproject.toml
+
+      - name: Build Java 8 package
+        run: |
+          cd jneqsim-java8
+          python -m build
+
+      - name: Publish Java 8 to Test PyPI
+        run: |
+          cd jneqsim-java8
+          hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+
+  # publish-java11:
+  #   name: Publish Java 11 JAR package
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Setup Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
+
+  #     - name: Install build tools
+  #       run: pip install build hatch
+
+  #     - name: Download Java 11 JAR
+  #       run: |
+  #         VERSION=${{ inputs.version }}
+  #         mkdir -p jneqsim-java11/jneqsim_java11
+  #         wget -O "jneqsim-java11/jneqsim_java11/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
+
+  #     - name: Update version in pyproject.toml
+  #       run: |
+  #         cd jneqsim-java11
+  #         sed -i 's/version = "0.0.1"/version = "${{ inputs.version }}"/' pyproject.toml
+
+  #     - name: Build Java 11 package
+  #       run: |
+  #         cd jneqsim-java11
+  #         python -m build
+
+  #     - name: Publish Java 11 to Test PyPI
+  #       run: |
+  #         cd jneqsim-java11
+  #         hatch publish -r test
+  #       env:
+  #         HATCH_INDEX_USER: __token__
+  #         HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+
+  # publish-java21:
+  #   name: Publish Java 21 JAR package
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Setup Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
+
+  #     - name: Install build tools
+  #       run: pip install build hatch
+
+  #     - name: Download Java 21 JAR
+  #       run: |
+  #         VERSION=${{ inputs.version }}
+  #         mkdir -p jneqsim-java21/jneqsim_java21
+  #         wget -O "jneqsim-java21/jneqsim_java21/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
+
+  #     - name: Update version in pyproject.toml
+  #       run: |
+  #         cd jneqsim-java21
+  #         sed -i 's/version = "0.0.1"/version = "${{ inputs.version }}"/' pyproject.toml
+
+  #     - name: Build Java 21 package
+  #       run: |
+  #         cd jneqsim-java21
+  #         python -m build
+
+  #     - name: Publish Java 21 to Test PyPI
+  #       run: |
+  #         cd jneqsim-java21
+  #         hatch publish -r test
+  #       env:
+  #         HATCH_INDEX_USER: __token__
+  #         HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}

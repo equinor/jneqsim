@@ -1,33 +1,54 @@
-[tool.poetry]
-name = "jneqsim"
-# Set in CI upon publishing
+[project]
+name = "jneqsim-test"
 version = "0.0.0"
-readme = "README.md"
 description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
-authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>"]
-maintainers = [
-  "Jørgen <jenge@equinor.com>",
-  "Stig Oskar <stoo@equinor.com>",
-]
+license = "Apache-2.0"
+keywords = ["neqsim"]
+#dynamic = ["version"]
+readme = "README.md"
+authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
+maintainers = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
+requires-python = '>=3.9,<4.0'
+dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
+
+[project.urls]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
-keywords = ["neqsim"]
-license = "Apache-2.0"
-include = ["jneqsim/neqsim-Java*.jar", "docs/"]
-exclude = ["jneqsim/jpype-stubs"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-JPype1 = "^1.5.0"
+[project.optional-dependencies]
+java8 = ["jneqsim-java8"]
+java11 = ["jneqsim-java11"]
+java21 = ["jneqsim-java21"]
 
-[tool.poetry.group.dev.dependencies]
-stubgenj = "^0.2.12"
-pytest = "^7.4.1"
-pre-commit = "^3.4.0"
+[dependency-groups]
+dev = [
+"stubgenj >= 0.2.12", 
+"pytest >= 7.4.1",
+"pre-commit >= 3.4.0"
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["jneqsim"]
+
+
+[tool.hatch.build.targets.sdist]
+include = [
+]
+exclude = [
+  ".github/*",
+  "poetry.lock",
+  "docs/*",
+  ".pre-commit-config.yaml",
+  ".gitignore",
+  "generate_stubs.py",
+  "tests/*",
+  "*.jar",
+  "jneqsim/neqsim-Java*.jar"
+]
 
 [tool.ruff]
 target-version = "py39"
@@ -44,7 +65,6 @@ lint.select = [
     "UP", # automatically upgrade syntax for newer versions of the language
     "RUF", # ruff specific rules
 ]
-
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files

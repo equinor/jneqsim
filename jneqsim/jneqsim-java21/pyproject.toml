@@ -1,0 +1,24 @@
+[project]
+name = "jneqsim-java21"
+version = "0.0.1"
+description = "NeqSim Java 21 JAR files for jNeqSim Python bindings"
+authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = '>=3.9,<4.0'
+
+[project.urls]
+homepage = "https://github.com/equinor/jneqsim"
+repository = "https://github.com/equinor/jneqsim"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "jneqsim_java21/"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["jneqsim_java21"]
