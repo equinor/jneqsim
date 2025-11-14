@@ -106,6 +106,7 @@ class NeqSimDependencyManager:
 
         # Create temporary file to download to
         import tempfile
+
         temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
         downloaded_jar = temp_dir / jar_filename
 
