@@ -1,6 +1,6 @@
 [project]
-name = "jneqsim"
-version = "0.0.0"
+name = "jneqsim_test"
+version = "0.0.1"
 description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
 license = "Apache-2.0"
 keywords = ["neqsim"]
@@ -42,6 +42,8 @@ exclude = [
   ".gitignore",
   "generate_stubs.py",
   "tests/*",
+  "*.jar",
+  "jneqsim/neqsim-Java*.jar"
 ]
 
 [tool.ruff]
