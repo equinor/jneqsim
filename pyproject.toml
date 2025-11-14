@@ -1,9 +1,10 @@
 [project]
 name = "jneqsim"
+version = "0.0.0"
 description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
 license = "Apache-2.0"
 keywords = ["neqsim"]
-dynamic = ["version"]
+#dynamic = ["version"]
 readme = "README.md"
 authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
 maintainers = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
@@ -14,20 +15,34 @@ dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
 
-[tool.poetry]
-# Set in CI upon publishing
-version = "0.0.0"
-include = []
-exclude = ["jneqsim/jpype-stubs", "*.jar"]
+[project.optional-dependencies]
+java8 = ["jneqsim-java8"]
+java11 = ["jneqsim-java11"]
+java21 = ["jneqsim-java21"]
 
-[tool.poetry.group.dev.dependencies]
-stubgenj = "^0.2.12"
-pytest = "^7.4.1"
-pre-commit = "^3.4.0"
+[dependency-groups]
+dev = [
+"stubgenj >= 0.2.12", 
+"pytest >= 7.4.1",
+"pre-commit >= 3.4.0"
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = [
+]
+exclude = [
+  ".github/*",
+  "poetry.lock",
+  "docs/*",
+  ".pre-commit-config.yaml",
+  ".gitignore",
+  "generate_stubs.py",
+  "tests/*",
+]
 
 [tool.ruff]
 target-version = "py39"
@@ -45,9 +60,6 @@ lint.select = [
     "RUF", # ruff specific rules
 ]
 
-
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
-
-
