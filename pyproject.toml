@@ -1,24 +1,24 @@
-[tool.poetry]
+[project]
 name = "jneqsim"
-# Set in CI upon publishing
-version = "0.0.0"
-readme = "README.md"
 description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
-authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>"]
-maintainers = [
-  "Jørgen <jenge@equinor.com>",
-  "Stig Oskar <stoo@equinor.com>",
-]
+license = "Apache-2.0"
+keywords = ["neqsim"]
+dynamic = ["version"]
+readme = "README.md"
+authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
+maintainers = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
+requires-python = '>=3.9,<4.0'
+dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
+
+[project.urls]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
-keywords = ["neqsim"]
-license = "Apache-2.0"
-include = ["jneqsim/neqsim-Java*.jar"]
-exclude = ["jneqsim/jpype-stubs"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-JPype1 = "^1.5.0"
+[tool.poetry]
+# Set in CI upon publishing
+version = "0.0.0"
+include = []
+exclude = ["jneqsim/jpype-stubs", "*.jar"]
 
 [tool.poetry.group.dev.dependencies]
 stubgenj = "^0.2.12"
@@ -49,3 +49,5 @@ lint.select = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
+
+
