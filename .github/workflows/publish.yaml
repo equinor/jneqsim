@@ -38,14 +38,6 @@ jobs:
           python-version: "3.10"
           cache: "poetry"
 
-      - name: Download JAR
-        run: |
-          VERSION=${{inputs.version}}
-          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
-          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
-          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
-          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
-
       - name: Install deps
         run: poetry install --no-interaction
 
