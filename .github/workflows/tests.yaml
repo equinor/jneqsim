@@ -46,15 +46,6 @@ jobs:
       - name: Install deps
         run: poetry install --no-interaction
 
-      - name: Download JAR
-        run: |
-          VERSION=$(curl -L -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/equinor/neqsim/releases/latest | jq '.tag_name' --raw-output)
-          VERSION="${VERSION:1}"
-          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
-          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
-          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
-          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
-
       - name: Generate stubs
         run: poetry run python ./generate_stubs.py
 
