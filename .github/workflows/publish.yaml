@@ -268,6 +268,9 @@ publish-testpkg:
     - name: Install build tools
       run: pip install build hatch
 
+    - name: Install dependencies
+      run: poetry install --no-interaction
+
     - name: Generate stubs
       run: poetry run python ./generate_stubs.py
 
