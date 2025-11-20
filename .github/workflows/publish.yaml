@@ -248,36 +248,38 @@ jobs:
           HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
 
 
-  publish-testpkg:
-      name: Publish jneqsim_test to TestPyPI
-      runs-on: ubuntu-latest
-      permissions:
-        id-token: write
-      steps:
-        - uses: actions/checkout@v4
+publish-testpkg:
+  name: Publish jneqsim_test to TestPyPI
+  runs-on: ubuntu-latest
+  permissions:
+    id-token: write
+  steps:
+    - uses: actions/checkout@v4
 
-        - name: Setup Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: "3.10"
+    - name: Install Poetry
+      run: pipx install poetry
 
-        - name: Install build tools
-          run: pip install build hatch
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: "poetry"
 
-        - name: Generate stubs
-          run: python ./generate_stubs.py
+    - name: Install build tools
+      run: pip install build hatch
 
-        - name: Update version in pyproject.toml
-          run: |
-            sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml
+    - name: Generate stubs
+      run: poetry run python ./generate_stubs.py
 
-        - name: Build jneqsim_test
-          run: |
-            python -m build
+    - name: Update version in pyproject.toml
+      run: |
+        sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml
 
-        - name: Publish jneqsim_test to TestPyPI
-          run: |
-            hatch publish -r test
-          env:
-            HATCH_INDEX_USER: __token__
-            HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+    - name: Build jneqsim_test
+      run: python -m build
+
+    - name: Publish jneqsim_test to TestPyPI
+      run: hatch publish -r test
+      env:
+        HATCH_INDEX_USER: __token__
+        HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
