@@ -264,6 +264,9 @@ jobs:
         - name: Install build tools
           run: pip install build hatch
 
+        - name: Generate stubs
+          run: python ./generate_stubs.py
+
         - name: Update version in pyproject.toml
           run: |
             sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml
