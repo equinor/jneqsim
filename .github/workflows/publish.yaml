@@ -247,42 +247,41 @@ jobs:
           HATCH_INDEX_USER: __token__
           HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
 
+  publish-testpkg:
+    name: Publish jneqsim_test to TestPyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
 
-publish-testpkg:
-  name: Publish jneqsim_test to TestPyPI
-  runs-on: ubuntu-latest
-  permissions:
-    id-token: write
-  steps:
-    - uses: actions/checkout@v4
+      - name: Install Poetry
+        run: pipx install poetry
 
-    - name: Install Poetry
-      run: pipx install poetry
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "poetry"
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
-        cache: "poetry"
+      - name: Install build tools
+        run: pip install build hatch
 
-    - name: Install build tools
-      run: pip install build hatch
+      - name: Install dependencies
+        run: poetry install --no-interaction
 
-    - name: Install dependencies
-      run: poetry install --no-interaction
+      - name: Generate stubs
+        run: poetry run python ./generate_stubs.py
 
-    - name: Generate stubs
-      run: poetry run python ./generate_stubs.py
+      - name: Update version in pyproject.toml
+        run: |
+          sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml
 
-    - name: Update version in pyproject.toml
-      run: |
-        sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml
+      - name: Build jneqsim_test
+        run: python -m build
 
-    - name: Build jneqsim_test
-      run: python -m build
-
-    - name: Publish jneqsim_test to TestPyPI
-      run: hatch publish -r test
-      env:
-        HATCH_INDEX_USER: __token__
-        HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+      - name: Publish jneqsim_test to TestPyPI
+        run: hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
