@@ -9,16 +9,11 @@ readme = "README.md"
 authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
 maintainers = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
 requires-python = '>=3.9,<4.0'
-dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
+dependencies = ['JPype1 (>=1.5.0,<2.0.0)', "jneqsim-java8", "jneqsim-java11", "jneqsim-java21"]
 
 [project.urls]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
-
-[project.optional-dependencies]
-java8 = ["jneqsim-java8"]
-java11 = ["jneqsim-java11"]
-java21 = ["jneqsim-java21"]
 
 [dependency-groups]
 dev = [
