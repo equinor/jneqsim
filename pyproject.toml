@@ -85,5 +85,5 @@ lint.select = [
 "**/tests/*" = ["E402", "S101"]
 
 
-#[tool.poetry]
-#packages = [{ include = "jneqsim" }]
+[tool.poetry]
+packages = [{ include = "jneqsim" }]
