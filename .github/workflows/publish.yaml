@@ -250,6 +250,7 @@ jobs:
   publish-testpkg:
     name: Publish jneqsim_test to TestPyPI
     runs-on: ubuntu-latest
+    needs: [publish-java8, publish-java11, publish-java21]
     permissions:
       id-token: write
     steps:
