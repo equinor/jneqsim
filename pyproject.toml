@@ -4,10 +4,11 @@ name = "jneqsimsmall"
 version = "0.0.0"
 readme = "README.md"
 description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
-authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>"]
+authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>, Mathias <maohe@equinor.com>, Mats <mklev@equinor.com>, Marcus <mkdr@equinor.com>"]
 maintainers = [
-  "Jørgen <jenge@equinor.com>",
-  "Stig Oskar <stoo@equinor.com>",
+  "Mathias <maohe@equinor.com>",
+  "Mats <mklev@equinor.com>",
+  "Marcus <mkdr@equinor.com>",
 ]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"

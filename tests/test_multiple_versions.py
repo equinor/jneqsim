@@ -12,45 +12,41 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 def test_multiple_java_versions():
     """Test dependency resolution for different Java versions"""
-    try:
-        print("🧪 Testing Multiple Java Versions")
-        print("=" * 50)
+    print("🧪 Testing Multiple Java Versions")
+    print("=" * 50)
 
-        from jneqsim.dependency_manager import NeqSimDependencyManager
+    from jneqsim.dependency_manager import NeqSimDependencyManager
 
-        manager = NeqSimDependencyManager()
-        latest_version = manager.get_latest_version()
+    manager = NeqSimDependencyManager()
+    latest_version = manager.get_latest_version()
+    assert latest_version is not None, "Failed to get latest version"
 
-        # Test different Java versions
-        java_versions = [8, 11, 17, 21]
-        resolved_jars = {}
+    # Test different Java versions
+    java_versions = [8, 11, 17, 21]
+    resolved_jars = {}
 
-        for java_version in java_versions:
-            print(f"\n✅ Testing Java {java_version}...")
-            try:
-                jar_path = manager.resolve_dependency(version=latest_version, java_version=java_version)
-                resolved_jars[java_version] = jar_path
-                print(f"   ✓ Resolved: {jar_path.name}")
-                print(f"   ✓ Size: {jar_path.stat().st_size / (1024*1024):.1f} MB")
-            except Exception as e:
-                print(f"   ✗ Failed: {e}")
+    for java_version in java_versions:
+        print(f"\n✅ Testing Java {java_version}...")
+        try:
+            jar_path = manager.resolve_dependency(version=latest_version, java_version=java_version)
+            resolved_jars[java_version] = jar_path
+            print(f"   ✓ Resolved: {jar_path.name}")
+            print(f"   ✓ Size: {jar_path.stat().st_size / (1024*1024):.1f} MB")
+        except Exception as e:
+            print(f"   ✗ Failed: {e}")
 
-        print("\n📋 Summary:")
-        print(f"   Successfully resolved {len(resolved_jars)}/{len(java_versions)} Java versions")
+    print("\n📋 Summary:")
+    print(f"   Successfully resolved {len(resolved_jars)}/{len(java_versions)} Java versions")
 
-        # Verify different Java versions have different JARs (except 11 and 17 which might be the same)
-        unique_jars = set(resolved_jars.values())
-        print(f"   Unique JAR files: {len(unique_jars)}")
+    # Verify at least some Java versions were resolved successfully
+    assert len(resolved_jars) > 0, "No Java versions were resolved successfully"
 
-        print("\n🎉 Multi-version test completed!")
-        return True
+    # Verify different Java versions have different JARs (except 11 and 17 which might be the same)
+    unique_jars = set(resolved_jars.values())
+    print(f"   Unique JAR files: {len(unique_jars)}")
+    assert len(unique_jars) > 0, "No unique JAR files found"
 
-    except Exception as e:
-        print(f"❌ Test failed: {e}")
-        import traceback
-
-        traceback.print_exc()
-        return False
+    print("\n🎉 Multi-version test completed!")
 
 
 if __name__ == "__main__":

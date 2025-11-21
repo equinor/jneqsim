@@ -12,34 +12,32 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 def test_basic_resolution():
     """Test basic dependency resolution without JVM"""
-    try:
-        print("Testing basic dependency resolution...")
+    print("Testing basic dependency resolution...")
 
-        from jneqsim.dependency_manager import NeqSimDependencyManager
+    from jneqsim.dependency_manager import NeqSimDependencyManager
 
-        # Create manager
-        manager = NeqSimDependencyManager()
+    # Create manager
+    manager = NeqSimDependencyManager()
 
-        # Get latest version
-        print("Getting latest NeqSim version...")
-        latest_version = manager.get_latest_version()
-        print(f"Latest version: {latest_version}")
+    # Get latest version
+    print("Getting latest NeqSim version...")
+    latest_version = manager.get_latest_version()
+    print(f"Latest version: {latest_version}")
+    assert latest_version is not None, "Failed to get latest version"
 
-        # Try to resolve for Java 11
-        print("Resolving dependency for Java 11...")
-        jar_path = manager.resolve_dependency(version=latest_version, java_version=11)
-        print(f"✅ Successfully resolved: {jar_path}")
-        print(f"   File exists: {jar_path.exists()}")
-        print(f"   File size: {jar_path.stat().st_size / (1024*1024):.1f} MB")
+    # Try to resolve for Java 11
+    print("Resolving dependency for Java 11...")
+    jar_path = manager.resolve_dependency(version=latest_version, java_version=11)
+    print(f"✅ Successfully resolved: {jar_path}")
 
-        return True
+    # Assertions
+    assert jar_path is not None, "Failed to resolve JAR path"
+    assert jar_path.exists(), f"JAR file does not exist: {jar_path}"
 
-    except Exception as e:
-        print(f"❌ Test failed: {e}")
-        import traceback
-
-        traceback.print_exc()
-        return False
+    file_size_mb = jar_path.stat().st_size / (1024 * 1024)
+    print(f"   File exists: {jar_path.exists()}")
+    print(f"   File size: {file_size_mb:.1f} MB")
+    assert file_size_mb > 0, "JAR file is empty"
 
 
 if __name__ == "__main__":

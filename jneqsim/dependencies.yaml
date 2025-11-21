@@ -5,6 +5,10 @@ neqsim:
   # Version to use ("latest" or specific version like "2.5.25")
   version: "latest"
   
+  # Fallback version when GitHub API is unavailable (rate limited, network issues)
+  # This will be used if no cached version exists
+  fallback_version: "2.5.35"
+  
   # GitHub Releases source
   sources:
     github:
@@ -17,7 +21,6 @@ neqsim:
       assets:
         java8: "neqsim-{version}-Java8.jar"
         java11: "neqsim-{version}.jar"  # Default Java 11+ version
-        java17: "neqsim-{version}-Java17.jar"
         java21: "neqsim-{version}-Java21.jar"
 
 # Logging configuration

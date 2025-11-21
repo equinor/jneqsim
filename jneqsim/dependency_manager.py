@@ -18,15 +18,22 @@ import yaml
 class NeqSimDependencyManager:
     """Manages NeqSim JAR dependencies from GitHub releases"""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Optional[Path] = None, cache_dir: Optional[Path] = None):
         """
         Initialize dependency manager
 
         Args:
             config_path: Path to dependencies.yaml, defaults to package config
+            cache_dir: Directory for caching version info, defaults to ~/.jneqsim/cache
         """
         if config_path is None:
             config_path = Path(__file__).parent / "dependencies.yaml"
+
+        if cache_dir is None:
+            cache_dir = Path.home() / ".jneqsim" / "cache"
+
+        self.cache_dir = cache_dir
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.config = self._load_config(config_path)
         self.logger = self._setup_logging()
@@ -70,7 +77,8 @@ class NeqSimDependencyManager:
             raise ValueError(f"Untrusted host: {parsed.hostname}. Allowed hosts: {allowed_hosts}")
 
     def get_latest_version(self) -> str:
-        """Get latest NeqSim version from GitHub API"""
+        """Get latest NeqSim version from GitHub API with caching and fallback"""
+        cache_file = self.cache_dir / "latest_version.json"
         repo = self.config["neqsim"]["sources"]["github"]["repository"]
         url = f"https://api.github.com/repos/{repo}/releases/latest"
 
@@ -78,14 +86,50 @@ class NeqSimDependencyManager:
         self._validate_url(url, {"api.github.com"})
 
         try:
-            with urllib.request.urlopen(url) as response:  # noqa: S310
+            with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310
                 data = json.loads(response.read())
                 version = data["tag_name"].lstrip("v")
-                self.logger.debug(f"Latest version: {version}")
+                self.logger.debug(f"Latest version from GitHub: {version}")
+
+                # Cache the version with timestamp
+                cache_data = {"version": version, "timestamp": __import__("time").time()}
+                cache_file.write_text(json.dumps(cache_data, indent=2))
+
                 return version
+        except urllib.error.HTTPError as e:
+            if e.code == 403:  # Rate limit exceeded
+                self.logger.warning("GitHub rate limit exceeded, trying cached or fallback version")
+                return self._get_fallback_version(cache_file)
+            else:
+                self.logger.error(f"HTTP error getting latest version: {e}")
+                return self._get_fallback_version(cache_file)
         except Exception as e:
-            self.logger.error(f"Failed to get latest version: {e}")
-            raise RuntimeError(f"Could not determine latest NeqSim version: {e}") from e
+            self.logger.warning(f"Failed to get latest version from GitHub: {e}")
+            return self._get_fallback_version(cache_file)
+
+    def _get_fallback_version(self, cache_file: Path) -> str:
+        """Get version from cache or use configured fallback"""
+        # Try cached version first
+        if cache_file.exists():
+            try:
+                cache_data = json.loads(cache_file.read_text())
+                version = cache_data["version"]
+                self.logger.info(f"Using cached version: {version}")
+                return version
+            except Exception as e:
+                self.logger.warning(f"Failed to read cached version: {e}")
+
+        # Use fallback version from config
+        fallback = self.config["neqsim"].get("fallback_version")
+        if fallback:
+            self.logger.info(f"Using fallback version from config: {fallback}")
+            return fallback
+
+        # Last resort - raise error
+        raise RuntimeError(
+            "Could not determine NeqSim version: GitHub API unavailable, "
+            "no cached version, and no fallback version configured"
+        )
 
     def _get_jar_patterns(self, java_version: int) -> list[str]:
         """Get list of JAR filename patterns to try for a given Java version.
@@ -101,16 +145,15 @@ class NeqSimDependencyManager:
                 github_config["assets"]["java8"],  # Standard pattern
                 github_config["assets"]["java11"],  # Fallback
             ]
+        elif 11 <= java_version < 21:
+            return [
+                "neqsim-{version}.jar",  # Standard pattern
+                github_config["assets"]["java11"],  # Fallback to default
+            ]
         elif java_version >= 21:
             return [
                 "neqsim-{version}-Java21-Java21.jar",  # Newer pattern
                 github_config["assets"]["java21"],  # Standard pattern
-                github_config["assets"]["java11"],  # Fallback to default
-            ]
-        elif java_version >= 17:
-            return [
-                "neqsim-{version}-Java17-Java17.jar",  # Newer pattern
-                "neqsim-{version}-Java17.jar",  # Standard pattern
                 github_config["assets"]["java11"],  # Fallback to default
             ]
         else:
