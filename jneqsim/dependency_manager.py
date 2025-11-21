@@ -4,32 +4,42 @@ NeqSim Dependency Manager
 Handles resolution and downloading of NeqSim Java dependencies from GitHub releases.
 """
 
-import json
 import logging
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Optional
-from urllib.parse import urlparse
 
 import yaml
+
+from .jar_cache import JARCacheManager
 
 
 class NeqSimDependencyManager:
     """Manages NeqSim JAR dependencies from GitHub releases"""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Optional[Path] = None, cache_dir: Optional[Path] = None):
         """
         Initialize dependency manager
 
         Args:
             config_path: Path to dependencies.yaml, defaults to package config
+            cache_dir: Directory for caching version info, defaults to ~/.jneqsim/cache
         """
         if config_path is None:
             config_path = Path(__file__).parent / "dependencies.yaml"
 
+        if cache_dir is None:
+            cache_dir = Path.home() / ".jneqsim" / "cache"
+
+        self.cache_dir = cache_dir
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
         self.config = self._load_config(config_path)
         self.logger = self._setup_logging()
+
+        # Initialize cache manager
+        self.cache_manager = JARCacheManager(self.cache_dir, self.config, self.logger)
 
     def _load_config(self, config_path: Path) -> dict:
         """Load configuration from YAML file"""
@@ -50,43 +60,6 @@ class NeqSimDependencyManager:
 
         return logger
 
-    def _validate_url(self, url: str, allowed_hosts: set[str]) -> None:
-        """
-        Validate URL for security - ensures HTTPS and trusted hosts only
-
-        Args:
-            url: URL to validate
-            allowed_hosts: Set of allowed hostnames
-
-        Raises:
-            ValueError: If URL is invalid or from untrusted host
-        """
-        parsed = urlparse(url)
-
-        if parsed.scheme != "https":
-            raise ValueError(f"Only HTTPS URLs are allowed, got: {parsed.scheme}")
-
-        if parsed.hostname not in allowed_hosts:
-            raise ValueError(f"Untrusted host: {parsed.hostname}. Allowed hosts: {allowed_hosts}")
-
-    def get_latest_version(self) -> str:
-        """Get latest NeqSim version from GitHub API"""
-        repo = self.config["neqsim"]["sources"]["github"]["repository"]
-        url = f"https://api.github.com/repos/{repo}/releases/latest"
-
-        # Validate URL for security
-        self._validate_url(url, {"api.github.com"})
-
-        try:
-            with urllib.request.urlopen(url) as response:  # noqa: S310
-                data = json.loads(response.read())
-                version = data["tag_name"].lstrip("v")
-                self.logger.debug(f"Latest version: {version}")
-                return version
-        except Exception as e:
-            self.logger.error(f"Failed to get latest version: {e}")
-            raise RuntimeError(f"Could not determine latest NeqSim version: {e}") from e
-
     def _get_jar_patterns(self, java_version: int) -> list[str]:
         """Get list of JAR filename patterns to try for a given Java version.
 
@@ -101,30 +74,30 @@ class NeqSimDependencyManager:
                 github_config["assets"]["java8"],  # Standard pattern
                 github_config["assets"]["java11"],  # Fallback
             ]
+        elif 11 <= java_version < 21:
+            return [
+                "neqsim-{version}.jar",  # Standard pattern
+                github_config["assets"]["java11"],  # Fallback to default
+            ]
         elif java_version >= 21:
             return [
                 "neqsim-{version}-Java21-Java21.jar",  # Newer pattern
                 github_config["assets"]["java21"],  # Standard pattern
                 github_config["assets"]["java11"],  # Fallback to default
             ]
-        elif java_version >= 17:
-            return [
-                "neqsim-{version}-Java17-Java17.jar",  # Newer pattern
-                "neqsim-{version}-Java17.jar",  # Standard pattern
-                github_config["assets"]["java11"],  # Fallback to default
-            ]
         else:
             return [github_config["assets"]["java11"]]
 
-    def _get_from_github(self, version: str, java_version: int) -> Path:
-        """Download JAR from GitHub releases with fallback support"""
+    def _get_JAR_from_github(self, version: str, java_version: int) -> Path:
+        """Download JAR from GitHub releases with fallback support and caching"""
         github_config = self.config["neqsim"]["sources"]["github"]
+
+        # Check cache first
+        cached_jar = self.cache_manager.get_cached_jar(version, java_version)
+        if cached_jar:
+            return cached_jar
+
         patterns_to_try = self._get_jar_patterns(java_version)
-
-        # Create temporary directory for download
-        import tempfile
-
-        temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
 
         # Try each pattern until one succeeds
         last_error = None
@@ -132,9 +105,10 @@ class NeqSimDependencyManager:
             jar_filename = asset_pattern.format(version=version)
             url = f"{github_config['base_url']}/v{version}/{jar_filename}"
 
-            # Validate URL for security
-            self._validate_url(url, {"github.com"})
+            # Create temporary directory for download
+            import tempfile
 
+            temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
             downloaded_jar = temp_dir / jar_filename
 
             try:
@@ -158,7 +132,9 @@ class NeqSimDependencyManager:
                 else:
                     self.logger.info(f"Downloaded from GitHub: {downloaded_jar.name}")
 
-                return downloaded_jar
+                # Cache the downloaded JAR
+                cached_jar = self.cache_manager.cache_jar(downloaded_jar, version, java_version)
+                return cached_jar
 
             except urllib.error.HTTPError as e:
                 if e.code == 404:
@@ -180,37 +156,30 @@ class NeqSimDependencyManager:
         self.logger.error(error_msg)
         raise RuntimeError(error_msg) from last_error
 
-    def resolve_dependency(self, version: Optional[str] = None, java_version: Optional[int] = None) -> Path:
+    def resolve_dependency(self, java_version: Optional[int] = None) -> Path:
         """
         Resolve NeqSim dependency
 
         Args:
-            version: NeqSim version, defaults to config or latest
+            version: Specific NeqSim version to use. If None, uses the version
+                    configured in dependencies.yaml. Note: The config should specify
+                    a pinned version that has been tested with this jneqsim release.
             java_version: Java version, auto-detected if None
 
         Returns:
             Path to resolved JAR file
         """
-        # Determine version and java version
-        version = self._resolve_version(version)
+
+        neqsim_version = self.config["neqsim"]["version"]
+        if neqsim_version is None:
+            raise ValueError("NeqSim version must be specified either as an argument or in dependencies.yaml")
+
         java_version = self._resolve_java_version(java_version)
 
         # Download dependency
-        jar_path = self._get_from_github(version, java_version)
+        jar_path = self._get_JAR_from_github(neqsim_version, java_version)
 
         return jar_path
-
-    def _resolve_version(self, version: Optional[str]) -> str:
-        """Resolve the NeqSim version to use"""
-        if version is None:
-            version = self.config["neqsim"]["version"]
-            if version == "latest":
-                version = self.get_latest_version()
-
-        if version is None:
-            raise RuntimeError("Could not determine NeqSim version")
-
-        return version
 
     def _resolve_java_version(self, java_version: Optional[int]) -> int:
         """Resolve the Java version to use"""
@@ -226,3 +195,8 @@ class NeqSimDependencyManager:
                 return 11  # Default fallback
         except ImportError:
             return 11  # Default fallback
+
+    @property
+    def jar_cache_dir(self) -> Path:
+        """Access to JAR cache directory for backward compatibility"""
+        return self.cache_manager.jar_cache_dir

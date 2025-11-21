@@ -4,10 +4,11 @@ name = "jneqsimsmall"
 version = "0.0.0"
 readme = "README.md"
 description = "Python bindings for the Java library NeqSim (via JPype), with python stubs"
-authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>"]
+authors = ["Jørgen <jenge@equinor.com>","Stig Oskar <stoo@equinor.com>, Mathias <maohe@equinor.com>, Mats <mklev@equinor.com>, Marcus <mkdr@equinor.com>"]
 maintainers = [
-  "Jørgen <jenge@equinor.com>",
-  "Stig Oskar <stoo@equinor.com>",
+  "Mathias <maohe@equinor.com>",
+  "Mats <mklev@equinor.com>",
+  "Marcus <mkdr@equinor.com>",
 ]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
@@ -51,3 +52,14 @@ lint.select = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
+
+# Configuration for dependency management
+[tool.jneqsim]
+# NeqSim dependency configuration
+neqsim_version = "latest"  # or specific version like "2.5.25"
+maven_coordinates = [
+    # If NeqSim becomes available in Maven Central, add here:
+    # { groupId = "no.ntnu.neqsim", artifactId = "neqsim-core", version = "2.5.25" }
+]
+fallback_to_github = true
+github_repo = "equinor/neqsim"

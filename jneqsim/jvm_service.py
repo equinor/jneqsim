@@ -40,16 +40,29 @@ def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
 
 
 # Initialize JVM with enhanced dependency resolution (only if JPype is available)
-if JPYPE_AVAILABLE and jpype and not jpype.isJVMStarted():
-    jpype.startJVM()
-    jar_path = get_neqsim_jar_path(jpype.getJVMVersion())
-    jpype.addClassPath(jar_path)
+neqsim = None  # Default to None
 
-if JPYPE_AVAILABLE:
+if JPYPE_AVAILABLE and jpype and not jpype.isJVMStarted():
+    try:
+        # Get the NeqSim JAR path first
+        jar_path = get_neqsim_jar_path(jpype.getJVMVersion())
+
+        # Start JVM with classpath
+        jpype.startJVM(classpath=[jar_path])
+
+        # Import jpype.imports after JVM is started
+        import jpype.imports
+
+        # This is the java package, added to the python scope by "jpype.imports"
+        neqsim = jpype.JPackage("neqsim")
+    except Exception as e:
+        # If JVM startup fails, leave neqsim as None
+        # This allows the module to be imported without JPype working
+        import warnings
+
+        warnings.warn(f"Failed to initialize JVM: {e}. NeqSim functionality will not be available.", stacklevel=2)
+elif JPYPE_AVAILABLE and jpype and jpype.isJVMStarted():
+    # JVM already started, just get the package
     import jpype.imports
 
-    # This is the java package, added to the python scope by "jpype.imports"
     neqsim = jpype.JPackage("neqsim")
-else:
-    # Placeholder when JPype is not available (for testing/development)
-    neqsim = None

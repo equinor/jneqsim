@@ -49,6 +49,40 @@ def pressurize_gas():
 
 - [jpype](https://jpype.readthedocs.io/en/latest/index.html#)
 
+## Version Management
+
+jneqsim uses a controlled release process to ensure compatibility:
+
+- **Pinned Versions**: Each jneqsim release is pinned to a specific, tested NeqSim JAR version
+- **Automated Updates**: The nightly CI workflow automatically checks for new NeqSim releases and publishes updated jneqsim packages when available
+- **No Auto-Updates**: Applications using jneqsim will not automatically download newer NeqSim versions - they use the tested version that comes with their installed jneqsim package
+- **Cache Management**: Downloaded JARs are cached locally in `~/.jneqsim/cache` for faster subsequent usage
+
+## Development
+
+### Running Tests
+
+Quick testing options:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-mock
+
+# Run unit tests (fast)
+make test-unit
+# or: pytest -v -m "not slow" tests/
+
+# Run all tests (may download JARs)
+make test-all  
+# or: pytest -v tests/
+
+# Run with coverage
+make coverage
+# or: pytest --cov=jneqsim --cov-report=html tests/
+```
+
+See [TESTING.md](TESTING.md) for detailed testing documentation.
+
 
 <a id="Contributing"></a>
 

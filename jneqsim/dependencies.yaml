@@ -2,8 +2,14 @@
 # This file defines how to resolve NeqSim Java dependencies
 
 neqsim:
-  # Version to use ("latest" or specific version like "2.5.25")
-  version: "latest"
+  # Version to use (specific version that has been tested with this jneqsim release)
+  # This version is automatically updated by the CI/CD pipeline when a new NeqSim release is published
+  version: "3.0.43"
+  
+  # Fallback version when GitHub API is unavailable (rate limited, network issues)
+  # This should be the previous tested version, providing a safety fallback mechanism
+  # The CI/CD pipeline automatically sets this to the previous version when updating
+  fallback_version: "3.0.42"
   
   # GitHub Releases source
   sources:
@@ -17,10 +23,14 @@ neqsim:
       assets:
         java8: "neqsim-{version}-Java8.jar"
         java11: "neqsim-{version}.jar"  # Default Java 11+ version
-        java17: "neqsim-{version}-Java17.jar"
         java21: "neqsim-{version}-Java21.jar"
 
 # Logging configuration
 logging:
   level: "INFO"  # DEBUG, INFO, WARNING, ERROR
   show_progress: true
+
+cache:
+  enabled: true
+  verify_integrity: true
+  # Cache stores one JAR file per version/Java version combination
