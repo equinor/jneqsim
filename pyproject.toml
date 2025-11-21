@@ -9,11 +9,12 @@ readme = "README.md"
 authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
 maintainers = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
 requires-python = '>=3.9,<4.0'
-dependencies = ['JPype1 (>=1.5.0,<2.0.0)', "jneqsim-java8", "jneqsim-java11", "jneqsim-java21"]
+dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
 
 [project.urls]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
+
 
 [dependency-groups]
 dev = [
@@ -64,3 +65,16 @@ lint.select = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
+
+[tool.poetry]
+packages = [{include = "jneqsim"}]
+
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+jneqsim-java11 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
+jneqsim-java8  = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
+jneqsim-java21 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
