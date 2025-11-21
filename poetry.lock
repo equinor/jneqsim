@@ -98,6 +98,57 @@ files = [
 ]
 
 [[package]]
+name = "jneqsim-java11"
+version = "3.0.50"
+description = "NeqSim Java 11 JAR files for jNeqSim Python bindings"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "jneqsim_java11-3.0.50-py3-none-any.whl", hash = "sha256:d989d116fc97ef858ff9ac801dd92d6c07e21ffa557b2bc48e2ebb7b474d521a"},
+    {file = "jneqsim_java11-3.0.50.tar.gz", hash = "sha256:f14112387880ab886ec54601cfa55e5a0470a1019a385157635bf59b5e7a6f2f"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
+
+[[package]]
+name = "jneqsim-java21"
+version = "3.0.50"
+description = "NeqSim Java 21 JAR files for jNeqSim Python bindings"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "jneqsim_java21-3.0.50-py3-none-any.whl", hash = "sha256:4ed8c3a7214f9512d24fe4f43b36a9f3aa7e54166537caf09bb8b72e6d03d865"},
+    {file = "jneqsim_java21-3.0.50.tar.gz", hash = "sha256:ed475f5690e655b30909ffe3b7c26d23593ce5c852ab7368b372766745c65b21"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
+
+[[package]]
+name = "jneqsim-java8"
+version = "3.0.50"
+description = "NeqSim Java 8 JAR files for jNeqSim Python bindings"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "jneqsim_java8-3.0.50-py3-none-any.whl", hash = "sha256:590450046f97dbb2591eddbf77b932d8d6cbf72870ccd216f32e3b3cffeaab86"},
+    {file = "jneqsim_java8-3.0.50.tar.gz", hash = "sha256:e26f56bef9c2d28b13437e32139887af5b375e68b28c9b63baaa7287641d3744"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
+
+[[package]]
 name = "jpype1"
 version = "1.5.0"
 description = "A Python to Java bridge."
@@ -378,4 +429,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "ed3a7356e0b0f2698057a5e07cf46d6f6b85cd92a9015e0e1d990ca5134778b6"
+content-hash = "97538cf072982395d268dba3e64647ac22e8a4d8372f4a018bd7dcbe37bfe04e"

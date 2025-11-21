@@ -6,22 +6,38 @@ license = "Apache-2.0"
 keywords = ["neqsim"]
 #dynamic = ["version"]
 readme = "README.md"
-authors = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
-maintainers = [{name = "Mats", email = "mklev@equinor.com"}, {name = "Mathias", email = "maohe@equinor.com"}, {name = "Marcus", email = "mkdr@equinor.com"}]
+authors = [
+  { name = "Mats", email = "mklev@equinor.com" },
+  { name = "Mathias", email = "maohe@equinor.com" },
+  { name = "Marcus", email = "mkdr@equinor.com" },
+]
+maintainers = [
+  { name = "Mats", email = "mklev@equinor.com" },
+  { name = "Mathias", email = "maohe@equinor.com" },
+  { name = "Marcus", email = "mkdr@equinor.com" },
+]
 requires-python = '>=3.9,<4.0'
-dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
+#dependencies = ['JPype1 (>=1.5.0,<2.0.0)']
 
 [project.urls]
 homepage = "https://github.com/equinor/jneqsim"
 repository = "https://github.com/equinor/jneqsim"
 
+[tool.poetry.dependencies]
+jPype1 = ">=1.5.0,<2.0.0"
+jneqsim-java11 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
+jneqsim-java8 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
+jneqsim-java21 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
+
+
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "explicit"
+
 
 [dependency-groups]
-dev = [
-"stubgenj >= 0.2.12", 
-"pytest >= 7.4.1",
-"pre-commit >= 3.4.0"
-]
+dev = ["stubgenj >= 0.2.12", "pytest >= 7.4.1", "pre-commit >= 3.4.0"]
 
 [build-system]
 requires = ["hatchling"]
@@ -32,8 +48,7 @@ packages = ["jneqsim"]
 
 
 [tool.hatch.build.targets.sdist]
-include = [
-]
+include = []
 exclude = [
   ".github/*",
   "poetry.lock",
@@ -43,7 +58,7 @@ exclude = [
   "generate_stubs.py",
   "tests/*",
   "*.jar",
-  "jneqsim/neqsim-Java*.jar"
+  "jneqsim/neqsim-Java*.jar",
 ]
 
 [tool.ruff]
@@ -51,30 +66,23 @@ target-version = "py39"
 line-length = 119
 
 lint.select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "S",
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
-    "UP", # automatically upgrade syntax for newer versions of the language
-    "RUF", # ruff specific rules
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "S",
+  "C",   # flake8-comprehensions
+  "B",   # flake8-bugbear
+  "UP",  # automatically upgrade syntax for newer versions of the language
+  "RUF", # ruff specific rules
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["E402", "F401"] # Ignore `E402` (import violations) in all `__init__.py` files
+"__init__.py" = [
+  "E402",
+  "F401",
+] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
 
 [tool.poetry]
-packages = [{include = "jneqsim"}]
-
-[[tool.poetry.source]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-priority = "supplemental"
-
-[tool.poetry.dependencies]
-jneqsim-java11 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
-jneqsim-java8  = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
-jneqsim-java21 = { version = ">=3.0.40,<4.0.0", source = "testpypi" }
+packages = [{ include = "jneqsim" }]
