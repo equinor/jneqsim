@@ -10,7 +10,6 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Optional
-from urllib.parse import urlparse
 
 import yaml
 
@@ -57,33 +56,11 @@ class NeqSimDependencyManager:
 
         return logger
 
-    def _validate_url(self, url: str, allowed_hosts: set[str]) -> None:
-        """
-        Validate URL for security - ensures HTTPS and trusted hosts only
-
-        Args:
-            url: URL to validate
-            allowed_hosts: Set of allowed hostnames
-
-        Raises:
-            ValueError: If URL is invalid or from untrusted host
-        """
-        parsed = urlparse(url)
-
-        if parsed.scheme != "https":
-            raise ValueError(f"Only HTTPS URLs are allowed, got: {parsed.scheme}")
-
-        if parsed.hostname not in allowed_hosts:
-            raise ValueError(f"Untrusted host: {parsed.hostname}. Allowed hosts: {allowed_hosts}")
-
     def get_latest_version(self) -> str:
         """Get latest NeqSim version from GitHub API with caching and fallback"""
         cache_file = self.cache_dir / "latest_version.json"
         repo = self.config["neqsim"]["sources"]["github"]["repository"]
         url = f"https://api.github.com/repos/{repo}/releases/latest"
-
-        # Validate URL for security
-        self._validate_url(url, {"api.github.com"})
 
         try:
             with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310
@@ -109,6 +86,7 @@ class NeqSimDependencyManager:
 
     def _get_fallback_version(self, cache_file: Path) -> str:
         """Get version from cache or use configured fallback"""
+        self.logger.info("Trying to get version from cache or fallback")
         # Try cached version first
         if cache_file.exists():
             try:
@@ -174,9 +152,6 @@ class NeqSimDependencyManager:
         for i, asset_pattern in enumerate(patterns_to_try):
             jar_filename = asset_pattern.format(version=version)
             url = f"{github_config['base_url']}/v{version}/{jar_filename}"
-
-            # Validate URL for security
-            self._validate_url(url, {"github.com"})
 
             downloaded_jar = temp_dir / jar_filename
 

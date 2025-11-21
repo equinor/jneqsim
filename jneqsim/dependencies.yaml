@@ -2,12 +2,12 @@
 # This file defines how to resolve NeqSim Java dependencies
 
 neqsim:
-  # Version to use ("latest" or specific version like "2.5.25")
+  # Version to use ("latest" or specific version like "3.0.38b0")
   version: "latest"
   
   # Fallback version when GitHub API is unavailable (rate limited, network issues)
   # This will be used if no cached version exists
-  fallback_version: "2.5.35"
+  fallback_version: "3.0.38b0"
   
   # GitHub Releases source
   sources:
