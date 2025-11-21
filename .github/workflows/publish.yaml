@@ -274,6 +274,9 @@ jobs:
       - name: Generate stubs
         run: poetry run python ./generate_stubs.py
 
+      - name: Fixup module naming
+        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+
       - name: Update version in pyproject.toml
         run: |
           sed -i 's/version = "0.0.0"/version = "${{ inputs.version }}"/' pyproject.toml

@@ -84,5 +84,6 @@ lint.select = [
 ] # Ignore `E402` (import violations) in all `__init__.py` files
 "**/tests/*" = ["E402", "S101"]
 
-[tool.poetry]
-packages = [{ include = "jneqsim" }]
+
+#[tool.poetry]
+#packages = [{ include = "jneqsim" }]
