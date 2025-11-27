@@ -34,6 +34,10 @@ class NeqSimDependencyManager:
         self.cache_dir = cache_dir
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
+        self.jar_cache_dir = self.cache_dir / "jars"
+        self.jar_cache_dir.mkdir(parents=True, exist_ok=True)
+
+
         self.config = self._load_config(config_path)
         self.logger = self._setup_logging()
 
@@ -138,22 +142,19 @@ class NeqSimDependencyManager:
             return [github_config["assets"]["java11"]]
 
     def _get_from_github(self, version: str, java_version: int) -> Path:
-        """Download JAR from GitHub releases with fallback support"""
         github_config = self.config["neqsim"]["sources"]["github"]
         patterns_to_try = self._get_jar_patterns(java_version)
 
-        # Create temporary directory for download
-        import tempfile
-
-        temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
-
-        # Try each pattern until one succeeds
         last_error = None
         for i, asset_pattern in enumerate(patterns_to_try):
             jar_filename = asset_pattern.format(version=version)
             url = f"{github_config['base_url']}/v{version}/{jar_filename}"
 
-            downloaded_jar = temp_dir / jar_filename
+            # Check persistent cache first
+            cached_jar = self.jar_cache_dir / jar_filename
+            if cached_jar.exists():
+                self.logger.info(f"Using cached JAR: {cached_jar}")
+                return cached_jar
 
             try:
                 is_fallback = i > 0
@@ -163,10 +164,12 @@ class NeqSimDependencyManager:
                     else:
                         self.logger.info(f"Downloading {jar_filename} for Java {java_version}...")
 
-                with urllib.request.urlopen(url) as response:  # noqa: S310
+                with urllib.request.urlopen(url) as response:
                     content = response.read()
 
-                downloaded_jar.write_bytes(content)
+                # Save to persistent cache
+                cached_jar.write_bytes(content)
+                self.logger.info(f"Downloaded and cached JAR: {cached_jar}")
 
                 if is_fallback:
                     self.logger.warning(
@@ -174,9 +177,9 @@ class NeqSimDependencyManager:
                         f"Java {java_version}-specific version not available."
                     )
                 else:
-                    self.logger.info(f"Downloaded from GitHub: {downloaded_jar.name}")
+                    self.logger.info(f"Downloaded from GitHub: {cached_jar.name}")
 
-                return downloaded_jar
+                return cached_jar
 
             except urllib.error.HTTPError as e:
                 if e.code == 404:
@@ -184,19 +187,17 @@ class NeqSimDependencyManager:
                     self.logger.debug(f"JAR not found: {jar_filename} (trying fallback...)")
                     continue  # Try next pattern
                 else:
-                    # For other HTTP errors, fail immediately
                     self.logger.error(f"HTTP error downloading from GitHub: {e}")
                     raise RuntimeError(f"Could not download NeqSim from GitHub: {e}") from e
             except Exception as e:
                 last_error = e
                 self.logger.error(f"Failed to download from GitHub: {e}")
-                # For non-HTTP errors, try fallback
                 continue
 
-        # If we get here, all attempts failed
         error_msg = f"Could not download NeqSim from GitHub for Java {java_version}: {last_error}"
         self.logger.error(error_msg)
         raise RuntimeError(error_msg) from last_error
+
 
     def resolve_dependency(self, version: Optional[str] = None, java_version: Optional[int] = None) -> Path:
         """
