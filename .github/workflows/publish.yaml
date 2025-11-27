@@ -79,40 +79,40 @@ jobs:
           HATCH_INDEX_USER: __token__
           HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN_MAOHE }}
 
-      - name: Notify publish success to Slack
-        if: ${{ success() }}
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
-                  }
-                }
-              ]
-            }
+      # - name: Notify publish success to Slack
+      #   if: ${{ success() }}
+      #   uses: slackapi/slack-github-action@v2.1.1
+      #   with:
+      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     webhook-type: incoming-webhook
+      #     payload: |
+      #       {
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
+      #             }
+      #           }
+      #         ]
+      #       }
 
-      - name: Notify publish failure to Slack
-        if: ${{ failure() || cancelled() }}
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                  }
-                }
-              ]
-            }
+      # - name: Notify publish failure to Slack
+      #   if: ${{ failure() || cancelled() }}
+      #   uses: slackapi/slack-github-action@v2.1.1
+      #   with:
+      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     webhook-type: incoming-webhook
+      #     payload: |
+      #       {
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      #             }
+      #           }
+      #         ]
+      #       }
