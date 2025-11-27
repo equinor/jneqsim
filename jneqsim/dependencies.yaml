@@ -7,7 +7,7 @@ neqsim:
   
   # Fallback version when GitHub API is unavailable (rate limited, network issues)
   # This will be used if no cached version exists
-  fallback_version: "3.0.38b0"
+  fallback_version: "3.0.38"
   
   # GitHub Releases source
   sources:
