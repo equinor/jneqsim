@@ -44,25 +44,55 @@ jobs:
       - name: Install deps
         run: poetry install --no-interaction
 
-      - name: Update NeqSim dependency version
+      - name: Check for new NeqSim release and JAR asset
+        id: check-release
         run: |
-          NEQSIM_VERSION="${{ inputs.version }}"
-          echo "Updating NeqSim dependency to version '$NEQSIM_VERSION'"
-          
-          # Get the current version to use as fallback
-          CURRENT_VERSION=$(grep -o 'version: "[^"]*"' jneqsim/dependencies.yaml | sed 's/version: "\(.*\)"/\1/')
-          echo "Current version (will become fallback): '$CURRENT_VERSION'"
-          echo "New version: '$NEQSIM_VERSION'"
-          
-          # Update the main version to the new version
-          sed -i "s/version: \"[^\"]*\"/version: \"$NEQSIM_VERSION\"/" jneqsim/dependencies.yaml
-          
-          # Set fallback version to the previous version (current before update)
-          sed -i "s/fallback_version: \"[^\"]*\"/fallback_version: \"$CURRENT_VERSION\"/" jneqsim/dependencies.yaml
-          
-          echo "Updated dependencies.yaml:"
-          grep -A 10 -B 5 "version:" jneqsim/dependencies.yaml
-          
+          set -e
+
+          # Fetch latest release tag from GitHub
+          LATEST_TAG=$(curl -s https://api.github.com/repos/equinor/neqsim/releases/latest | jq -r '.tag_name')
+          LATEST_VERSION="${LATEST_TAG#v}"
+
+          # Check if the JAR asset exists (Java 11 example)
+          JAR_URL="https://github.com/equinor/neqsim/releases/download/${LATEST_TAG}/neqsim-${LATEST_VERSION}.jar"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$JAR_URL")
+
+          # Fetch current jneqsimsmall version from TestPyPI
+          CURRENT_JNEQSIM=$(curl -s https://test.pypi.org/pypi/jneqsimsmall/json | jq -r '.info.version')
+
+          echo "Latest tag: $LATEST_TAG"
+          echo "Latest version: $LATEST_VERSION"
+          echo "Current jneqsimsmall: $CURRENT_JNEQSIM"
+          echo "JAR URL: $JAR_URL (HTTP $HTTP_STATUS)"
+
+          if [[ "$HTTP_STATUS" == "200" && "$LATEST_VERSION" != "$CURRENT_JNEQSIM" ]]; then
+            echo "new_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+            echo "fallback_version=$CURRENT_JNEQSIM" >> $GITHUB_OUTPUT
+            echo "New NeqSim JAR is available and not yet published to TestPyPI."
+          else
+            echo "new_version=" >> $GITHUB_OUTPUT
+            echo "fallback_version=" >> $GITHUB_OUTPUT
+            echo "No new NeqSim JAR to publish."
+          fi
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+  
+
+      - name: Update dependencies.yaml version
+        if: ${{ steps.check-release.outputs.new_version != '' }}
+        uses: mikefarah/yq@v4.49.2
+        with:
+        cmd: yq -i '.neqsim.version = "${{ steps.check-release.outputs.new_version }}"' jneqsim/dependencies.yaml
+
+      - name: Update dependencies.yaml fallback_version
+        if: ${{ steps.check-release.outputs.new_version != '' }}
+        uses: mikefarah/yq@v4.49.2
+        with:
+          cmd: yq -i '.neqsim.fallback_version = "${{ steps.check-release.outputs.fallback_version }}"' jneqsim/dependencies.yaml
+
+
+
       - name: Generate stubs
         run: poetry run python ./generate_stubs.py
 
