@@ -82,19 +82,15 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
   
-
-      - name: Update dependencies.yaml version
-        if: ${{ steps.check-release.outputs.new_version != '' }}
-        uses: mikefarah/yq@v4.49.2
-        with:
-          cmd: yq -i '.neqsim.version = "${{ steps.check-release.outputs.new_version }}"' jneqsim/dependencies.yaml
-
-      - name: Update dependencies.yaml fallback_version
-        if: ${{ steps.check-release.outputs.new_version != '' }}
-        uses: mikefarah/yq@v4.49.2
-        with:
-          cmd: yq -i '.neqsim.fallback_version = "${{ steps.check-release.outputs.fallback_version }}"' jneqsim/dependencies.yaml
-
+      - name: Update dependencies.yaml with new and fallback version
+        run: |
+          NEQSIM_VERSION="${{ inputs.version }}"
+          # Get the current version before updating
+          CURRENT_VERSION=$(yq e '.neqsim.version' jneqsim/dependencies.yaml)
+          echo "Updating dependencies.yaml: version=$NEQSIM_VERSION, fallback_version=$CURRENT_VERSION"
+          yq -i '.neqsim.version = "'"$NEQSIM_VERSION"'"' jneqsim/dependencies.yaml
+          yq -i '.neqsim.fallback_version = "'"$CURRENT_VERSION"'"' jneqsim/dependencies.yaml
+          cat jneqsim/dependencies.yaml
 
 
       - name: Generate stubs
