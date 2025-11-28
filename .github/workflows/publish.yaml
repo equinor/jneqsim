@@ -58,10 +58,8 @@ jobs:
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$JAR_URL")
 
           # Fetch current jneqsimsmall version from TestPyPI
-          CURRENT_JNEQSIM=$(curl -s https://test.pypi.org/pypi/jneqsimsmall/json | jq -r '.info.version' 2>/dev/null) || CURRENT_JNEQSIM=""
-          if [[ -z "$CURRENT_JNEQSIM" || "$CURRENT_JNEQSIM" == "null" ]]; then
-            CURRENT_JNEQSIM="3.0.39"
-          fi  
+          CURRENT_JNEQSIM=$(curl -s https://test.pypi.org/pypi/jneqsimsmall/json | jq -r '.info.version')
+
 
 
           echo "Latest tag: $LATEST_TAG"
