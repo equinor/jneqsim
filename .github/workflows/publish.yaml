@@ -44,7 +44,7 @@ jobs:
       - name: Install deps
         run: poetry install --no-interaction
 
-      - name: Check for new NeqSim release and JAR asset
+      - name: Check for new NeqSim release
         id: check-release
         run: |
           set -e
@@ -53,26 +53,24 @@ jobs:
           LATEST_TAG=$(curl -s https://api.github.com/repos/equinor/neqsim/releases/latest | jq -r '.tag_name')
           LATEST_VERSION="${LATEST_TAG#v}"
 
-          # Check if the JAR asset exists (Java 11 example)
-          JAR_URL="https://github.com/equinor/neqsim/releases/download/${LATEST_TAG}/neqsim-${LATEST_VERSION}.jar"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$JAR_URL")
-
           # Fetch current jneqsimsmall version from TestPyPI
           CURRENT_JNEQSIM=$(curl -s https://test.pypi.org/pypi/jneqsimsmall/json | jq -r '.info.version')
+          if [[ -z "$CURRENT_JNEQSIM" || "$CURRENT_JNEQSIM" == "null" ]]; then
+            CURRENT_JNEQSIM="3.0.39"
+          fi
 
           echo "Latest tag: $LATEST_TAG"
           echo "Latest version: $LATEST_VERSION"
           echo "Current jneqsimsmall: $CURRENT_JNEQSIM"
-          echo "JAR URL: $JAR_URL (HTTP $HTTP_STATUS)"
 
-          if [[ "$HTTP_STATUS" == "200" && "$LATEST_VERSION" != "$CURRENT_JNEQSIM" ]]; then
+          if [[ "$LATEST_VERSION" != "$CURRENT_JNEQSIM" ]]; then
             echo "new_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
             echo "fallback_version=$CURRENT_JNEQSIM" >> $GITHUB_OUTPUT
-            echo "New NeqSim JAR is available and not yet published to TestPyPI."
+            echo "New NeqSim version is available and not yet published to TestPyPI."
           else
             echo "new_version=" >> $GITHUB_OUTPUT
             echo "fallback_version=" >> $GITHUB_OUTPUT
-            echo "No new NeqSim JAR to publish."
+            echo "No new NeqSim version to publish."
           fi
 
       - name: Install jq
