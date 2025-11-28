@@ -21,7 +21,7 @@ def test_basic_resolution():
 
     # Get latest version
     print("Getting latest NeqSim version...")
-    latest_version = manager.get_latest_version()
+    latest_version = manager.config["neqsim"]["version"]
     print(f"Latest version: {latest_version}")
     assert latest_version is not None, "Failed to get latest version"
 

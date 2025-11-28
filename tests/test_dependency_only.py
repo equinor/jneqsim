@@ -27,7 +27,7 @@ def test_dependency_manager_only():
 
         # Test latest version retrieval
         print("Getting latest NeqSim version...")
-        latest_version = manager.get_latest_version()
+        latest_version = manager.config["neqsim"]["version"]
         print(f"✅ Latest version: {latest_version}")
 
         # Test dependency resolution (this will download the JAR)

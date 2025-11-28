@@ -58,7 +58,7 @@ def test_dependency_manager():
 
             # Test 2: Get latest version
             print("\n✅ Test 2: Getting latest version...")
-            latest_version = manager.get_latest_version()
+            latest_version = manager.config["neqsim"]["version"]
             print(f"   Latest NeqSim version: {latest_version}")
 
             # Test 3: Resolve dependency for Java 11

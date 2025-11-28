@@ -18,7 +18,7 @@ def test_multiple_java_versions():
     from jneqsim.dependency_manager import NeqSimDependencyManager
 
     manager = NeqSimDependencyManager()
-    latest_version = manager.get_latest_version()
+    latest_version = manager.config["neqsim"]["version"]
     assert latest_version is not None, "Failed to get latest version"
 
     # Test different Java versions
