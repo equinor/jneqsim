@@ -60,8 +60,6 @@ jobs:
           # Fetch current jneqsimsmall version from TestPyPI
           CURRENT_JNEQSIM=$(curl -s https://test.pypi.org/pypi/jneqsimsmall/json | jq -r '.info.version')
 
-
-
           echo "Latest tag: $LATEST_TAG"
           echo "Latest version: $LATEST_VERSION"
           echo "Current jneqsimsmall: $CURRENT_JNEQSIM"
@@ -83,12 +81,12 @@ jobs:
       - name: Update dependencies.yaml with new and fallback version
         run: |
           NEQSIM_VERSION="${{ inputs.version }}"
-          # Get the current version before updating
-          CURRENT_VERSION=$(yq e '.neqsim.version' jneqsim/dependencies.yaml)
-          echo "Updating dependencies.yaml: version=$NEQSIM_VERSION, fallback_version=$CURRENT_VERSION"
+          FALLBACK_VERSION="${{ steps.check-release.outputs.fallback_version }}"
+          echo "Updating dependencies.yaml: version=$NEQSIM_VERSION, fallback_version=$FALLBACK_VERSION"
           yq -i '.neqsim.version = "'"$NEQSIM_VERSION"'"' jneqsim/dependencies.yaml
-          yq -i '.neqsim.fallback_version = "'"$CURRENT_VERSION"'"' jneqsim/dependencies.yaml
+          yq -i '.neqsim.fallback_version = "'"$FALLBACK_VERSION"'"' jneqsim/dependencies.yaml
           cat jneqsim/dependencies.yaml
+
 
 
       - name: Generate stubs
