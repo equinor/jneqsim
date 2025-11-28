@@ -3,11 +3,11 @@
 
 neqsim:
   # Version to use ("latest" or specific version like "3.0.38b0")
-  version: "latest"
+  version: "x.x.x"
   
   # Fallback version when GitHub API is unavailable (rate limited, network issues)
   # This will be used if no cached version exists
-  fallback_version: "3.0.38"
+  fallback_version: "version - 1"
   
   # GitHub Releases source
   sources:

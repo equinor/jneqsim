@@ -60,58 +60,58 @@ class NeqSimDependencyManager:
 
         return logger
 
-    def get_latest_version(self) -> str:
-        """Get latest NeqSim version from GitHub API with caching and fallback"""
-        cache_file = self.cache_dir / "latest_version.json"
-        repo = self.config["neqsim"]["sources"]["github"]["repository"]
-        url = f"https://api.github.com/repos/{repo}/releases/latest"
+    # def get_latest_version(self) -> str:
+    #     """Get latest NeqSim version from GitHub API with caching and fallback"""
+    #     cache_file = self.cache_dir / "latest_version.json"
+    #     repo = self.config["neqsim"]["sources"]["github"]["repository"]
+    #     url = f"https://api.github.com/repos/{repo}/releases/latest"
 
-        try:
-            with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310
-                data = json.loads(response.read())
-                version = data["tag_name"].lstrip("v")
-                self.logger.debug(f"Latest version from GitHub: {version}")
+    #     try:
+    #         with urllib.request.urlopen(url, timeout=10) as response:  # noqa: S310
+    #             data = json.loads(response.read())
+    #             version = data["tag_name"].lstrip("v")
+    #             self.logger.debug(f"Latest version from GitHub: {version}")
 
-                # Cache the version with timestamp
-                cache_data = {"version": version, "timestamp": __import__("time").time()}
-                cache_file.write_text(json.dumps(cache_data, indent=2))
+    #             # Cache the version with timestamp
+    #             cache_data = {"version": version, "timestamp": __import__("time").time()}
+    #             cache_file.write_text(json.dumps(cache_data, indent=2))
 
-                return version
-        except urllib.error.HTTPError as e:
-            if e.code == 403:  # Rate limit exceeded
-                self.logger.warning("GitHub rate limit exceeded, trying cached or fallback version")
-                return self._get_fallback_version(cache_file)
-            else:
-                self.logger.error(f"HTTP error getting latest version: {e}")
-                return self._get_fallback_version(cache_file)
-        except Exception as e:
-            self.logger.warning(f"Failed to get latest version from GitHub: {e}")
-            return self._get_fallback_version(cache_file)
+    #             return version
+    #     except urllib.error.HTTPError as e:
+    #         if e.code == 403:  # Rate limit exceeded
+    #             self.logger.warning("GitHub rate limit exceeded, trying cached or fallback version")
+    #             return self._get_fallback_version(cache_file)
+    #         else:
+    #             self.logger.error(f"HTTP error getting latest version: {e}")
+    #             return self._get_fallback_version(cache_file)
+    #     except Exception as e:
+    #         self.logger.warning(f"Failed to get latest version from GitHub: {e}")
+    #         return self._get_fallback_version(cache_file)
 
-    def _get_fallback_version(self, cache_file: Path) -> str:
-        """Get version from cache or use configured fallback"""
-        self.logger.info("Trying to get version from cache or fallback")
-        # Try cached version first
-        if cache_file.exists():
-            try:
-                cache_data = json.loads(cache_file.read_text())
-                version = cache_data["version"]
-                self.logger.info(f"Using cached version: {version}")
-                return version
-            except Exception as e:
-                self.logger.warning(f"Failed to read cached version: {e}")
+    # def _get_fallback_version(self, cache_file: Path) -> str:
+    #     """Get version from cache or use configured fallback"""
+    #     self.logger.info("Trying to get version from cache or fallback")
+    #     # Try cached version first
+    #     if cache_file.exists():
+    #         try:
+    #             cache_data = json.loads(cache_file.read_text())
+    #             version = cache_data["version"]
+    #             self.logger.info(f"Using cached version: {version}")
+    #             return version
+    #         except Exception as e:
+    #             self.logger.warning(f"Failed to read cached version: {e}")
 
-        # Use fallback version from config
-        fallback = self.config["neqsim"].get("fallback_version")
-        if fallback:
-            self.logger.info(f"Using fallback version from config: {fallback}")
-            return fallback
+    #     # Use fallback version from config
+    #     fallback = self.config["neqsim"].get("fallback_version")
+    #     if fallback:
+    #         self.logger.info(f"Using fallback version from config: {fallback}")
+    #         return fallback
 
-        # Last resort - raise error
-        raise RuntimeError(
-            "Could not determine NeqSim version: GitHub API unavailable, "
-            "no cached version, and no fallback version configured"
-        )
+    #     # Last resort - raise error
+    #     raise RuntimeError(
+    #         "Could not determine NeqSim version: GitHub API unavailable, "
+    #         "no cached version, and no fallback version configured"
+    #     )
 
     def _get_jar_patterns(self, java_version: int) -> list[str]:
         """Get list of JAR filename patterns to try for a given Java version.
@@ -200,36 +200,57 @@ class NeqSimDependencyManager:
 
 
     def resolve_dependency(self, version: Optional[str] = None, java_version: Optional[int] = None) -> Path:
-        """
-        Resolve NeqSim dependency
-
-        Args:
-            version: NeqSim version, defaults to config or latest
-            java_version: Java version, auto-detected if None
-
-        Returns:
-            Path to resolved JAR file
-        """
-        # Determine version and java version
+        # 1. Use specified version or config version
         version = self._resolve_version(version)
         java_version = self._resolve_java_version(java_version)
 
-        # Download dependency
-        jar_path = self._get_from_github(version, java_version)
+        # 2. Check for cached JAR
+        jar_path = self._get_cached_jar(version, java_version)
+        if jar_path:
+            self.logger.info(f"Using cached JAR: {jar_path}")
+            return jar_path
 
-        return jar_path
+        # 3. Try to download the JAR for the desired version
+        try:
+            jar_path = self._get_from_github(version, java_version)
+            return jar_path
+        except Exception as e:
+            self.logger.warning(f"Failed to download JAR for version {version}: {e}")
+
+        # 4. Try fallback version if configured
+        fallback = self.config["neqsim"].get("fallback_version")
+        if fallback:
+            self.logger.info(f"Trying fallback version: {fallback}")
+            jar_path = self._get_cached_jar(fallback, java_version)
+            if jar_path:
+                self.logger.info(f"Using cached fallback JAR: {jar_path}")
+                return jar_path
+            try:
+                jar_path = self._get_from_github(fallback, java_version)
+                return jar_path
+            except Exception as e:
+                self.logger.error(f"Failed to download fallback JAR: {e}")
+
+        # 5. If all fails, raise an error
+        raise RuntimeError("Could not resolve or download any NeqSim JAR for your Java version.")
 
     def _resolve_version(self, version: Optional[str]) -> str:
-        """Resolve the NeqSim version to use"""
-        if version is None:
-            version = self.config["neqsim"]["version"]
-            if version == "latest":
-                version = self.get_latest_version()
-
-        if version is None:
-            raise RuntimeError("Could not determine NeqSim version")
-
+        # Use the passed version, or the one in config
+        if version is not None:
+            return version
+        version = self.config["neqsim"]["version"]
+        if not version:
+            raise RuntimeError("No NeqSim version specified in config or arguments.")
         return version
+
+    def _get_cached_jar(self, version: str, java_version: int) -> Optional[Path]:
+        for pattern in self._get_jar_patterns(java_version):
+            jar_filename = pattern.format(version=version)
+            cached_jar = self.jar_cache_dir / jar_filename
+            if cached_jar.exists():
+                return cached_jar
+        return None
+
 
     def _resolve_java_version(self, java_version: Optional[int]) -> int:
         """Resolve the Java version to use"""
