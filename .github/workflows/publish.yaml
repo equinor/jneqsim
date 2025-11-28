@@ -83,7 +83,7 @@ jobs:
         if: ${{ steps.check-release.outputs.new_version != '' }}
         uses: mikefarah/yq@v4.49.2
         with:
-        cmd: yq -i '.neqsim.version = "${{ steps.check-release.outputs.new_version }}"' jneqsim/dependencies.yaml
+          cmd: yq -i '.neqsim.version = "${{ steps.check-release.outputs.new_version }}"' jneqsim/dependencies.yaml
 
       - name: Update dependencies.yaml fallback_version
         if: ${{ steps.check-release.outputs.new_version != '' }}
