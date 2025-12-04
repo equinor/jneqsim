@@ -48,24 +48,24 @@ jobs:
         run: poetry run python ./generate_stubs.py
 
       - name: Fixup module naming
-        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0 sed -i -e 's/neqsim./jneqsim.neqsim./g' || true
 
       - name: Update NeqSim dependency version
         run: |
           NEQSIM_VERSION="${{ inputs.version }}"
           echo "Updating NeqSim dependency to version '$NEQSIM_VERSION'"
-          
+
           # Get the current version to use as fallback
           CURRENT_VERSION=$(grep -o 'version: "[^"]*"' jneqsim/dependencies.yaml | head -1 | sed 's/version: "\(.*\)"/\1/')
           echo "Current version (will become fallback): '$CURRENT_VERSION'"
           echo "New version: '$NEQSIM_VERSION'"
-          
+
           # Update the main version to the new version
           sed -i 's/version: "[^"]*"/version: "'"$NEQSIM_VERSION"'"/' jneqsim/dependencies.yaml
-          
+
           # Set fallback version to the previous version (current before update)
           sed -i 's/fallback_version: "[^"]*"/fallback_version: "'"$CURRENT_VERSION"'"/' jneqsim/dependencies.yaml
-          
+
           echo "Updated dependencies.yaml:"
           grep -A 10 -B 5 "version:" jneqsim/dependencies.yaml
 
@@ -91,7 +91,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           attestations: false
-      
+
       - name: Notify publish success to Slack
         if: ${{ success() }}
         uses: slackapi/slack-github-action@v2.1.1
