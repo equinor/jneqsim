@@ -2,6 +2,15 @@
 
 jpype-stubs
 neqsim.jar
+*.jar
+
+# Test environments
+test_venv/
+venv/
+env/
+
+# Cache directories  
+.cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

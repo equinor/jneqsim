@@ -1,0 +1,29 @@
+# NeqSim Dependency Configuration
+# This file defines how to resolve NeqSim Java dependencies
+
+neqsim:
+  # Version to use ("latest" or specific version like "3.0.38b0")
+  version: "x.x.x"
+  
+  # Fallback version when GitHub API is unavailable (rate limited, network issues)
+  # This will be used if no cached version exists
+  fallback_version: "version - 1"
+  
+  # GitHub Releases source
+  sources:
+    github:
+      enabled: true
+      repository: "equinor/neqsim"
+      base_url: "https://github.com/equinor/neqsim/releases/download"
+      # JAR file patterns for different Java versions
+      # Note: The code will try multiple naming patterns per Java version
+      # (e.g., Java21-Java21, Java21, then default) to handle variations
+      assets:
+        java8: "neqsim-{version}-Java8.jar"
+        java11: "neqsim-{version}.jar"  # Default Java 11+ version
+        java21: "neqsim-{version}-Java21.jar"
+
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  show_progress: true

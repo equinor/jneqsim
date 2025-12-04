@@ -38,22 +38,61 @@ jobs:
           python-version: "3.10"
           cache: "poetry"
 
-      - name: Download JAR
-        run: |
-          VERSION=${{inputs.version}}
-          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
-          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
-          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
-          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
+      - name: Install build tools
+        run: pip install build hatch
 
       - name: Install deps
         run: poetry install --no-interaction
+
+      - name: Check for new NeqSim release
+        id: check-release
+        run: |
+          set -e
+
+          # Fetch latest release tag from GitHub
+          LATEST_TAG=$(curl -s https://api.github.com/repos/equinor/neqsim/releases/latest | jq -r '.tag_name')
+          LATEST_VERSION="${LATEST_TAG#v}"
+
+          # Fetch current jneqsimsmall version from TestPyPI
+          CURRENT_JNEQSIM=$(curl -s https://test.pypi.org/pypi/jneqsimsmall/json | jq -r '.info.version')
+          if [[ -z "$CURRENT_JNEQSIM" || "$CURRENT_JNEQSIM" == "null" ]]; then
+            CURRENT_JNEQSIM="3.0.39"
+          fi
+
+          echo "Latest tag: $LATEST_TAG"
+          echo "Latest version: $LATEST_VERSION"
+          echo "Current jneqsimsmall: $CURRENT_JNEQSIM"
+
+          if [[ "$LATEST_VERSION" != "$CURRENT_JNEQSIM" ]]; then
+            echo "new_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+            echo "fallback_version=$CURRENT_JNEQSIM" >> $GITHUB_OUTPUT
+            echo "New NeqSim version is available and not yet published to TestPyPI."
+          else
+            echo "new_version=" >> $GITHUB_OUTPUT
+            echo "fallback_version=" >> $GITHUB_OUTPUT
+            echo "No new NeqSim version to publish."
+          fi
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+  
+      - name: Update dependencies.yaml with new and fallback version
+        run: |
+          NEQSIM_VERSION="${{ inputs.version }}"
+          FALLBACK_VERSION="${{ steps.check-release.outputs.fallback_version }}"
+          echo "Updating dependencies.yaml: version=$NEQSIM_VERSION, fallback_version=$FALLBACK_VERSION"
+          yq -i '.neqsim.version = "'"$NEQSIM_VERSION"'"' jneqsim/dependencies.yaml
+          yq -i '.neqsim.fallback_version = "'"$FALLBACK_VERSION"'"' jneqsim/dependencies.yaml
+          cat jneqsim/dependencies.yaml
+
+
 
       - name: Generate stubs
         run: poetry run python ./generate_stubs.py
 
       - name: Fixup module naming
         run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+
 
       - name: Bump version
         run: |
@@ -70,48 +109,54 @@ jobs:
           cd tests
           python -m venv .venv
           source .venv/bin/activate
-          pip install ../dist/jneqsim-*.tar.gz pytest
+          pip install ../dist/jneqsimsmall-*.tar.gz pytest
           pytest
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          attestations: false
+      # - name: Publish package distributions to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     attestations: false
+      
+      - name: Publish package to TestPyPI
+        run: hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN_MAOHE }}
 
-      - name: Notify publish success to Slack
-        if: ${{ success() }}
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
-                  }
-                }
-              ]
-            }
+      # - name: Notify publish success to Slack
+      #   if: ${{ success() }}
+      #   uses: slackapi/slack-github-action@v2.1.1
+      #   with:
+      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     webhook-type: incoming-webhook
+      #     payload: |
+      #       {
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
+      #             }
+      #           }
+      #         ]
+      #       }
 
-      - name: Notify publish failure to Slack
-        if: ${{ failure() || cancelled() }}
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                  }
-                }
-              ]
-            }
+      # - name: Notify publish failure to Slack
+      #   if: ${{ failure() || cancelled() }}
+      #   uses: slackapi/slack-github-action@v2.1.1
+      #   with:
+      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     webhook-type: incoming-webhook
+      #     payload: |
+      #       {
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      #             }
+      #           }
+      #         ]
+      #       }
