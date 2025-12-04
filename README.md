@@ -62,26 +62,28 @@ jneqsim uses a controlled release process to ensure compatibility:
 
 ### Running Tests
 
-Quick testing options:
+The project uses pytest with custom markers to categorize tests. Test dependencies are already included in the development dependencies.
 
 ```bash
-# Install test dependencies
-pip install pytest pytest-mock
+# Install development dependencies (includes pytest and pytest-mock)
+pip install -e ".[dev]"
+# or if using poetry: poetry install
 
-# Run unit tests (fast)
-make test-unit
-# or: pytest -v -m "not slow" tests/
+# Run unit tests (fast, excludes tests marked as slow)
+pytest -v -m "not slow" tests/
 
-# Run all tests (may download JARs)
-make test-all  
-# or: pytest -v tests/
+# Run all tests (may download JARs for integration tests)
+pytest -v tests/
 
-# Run with coverage
-make coverage
-# or: pytest --cov=jneqsim --cov-report=html tests/
+# Run with coverage (requires pytest-cov)
+pip install pytest-cov
+pytest --cov=jneqsim --cov-report=html tests/
 ```
 
-See [TESTING.md](TESTING.md) for detailed testing documentation.
+**Test markers:**
+- `slow`: Tests that may download files or take longer to run
+- `integration`: Integration tests that require external dependencies
+- `unit`: Fast unit tests (default)
 
 
 <a id="Contributing"></a>

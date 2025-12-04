@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "jneqsimsmall"
+name = "jneqsim"
 # Set in CI upon publishing
 version = "0.0.0"
 readme = "README.md"
