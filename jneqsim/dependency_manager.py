@@ -67,21 +67,18 @@ class NeqSimDependencyManager:
             return [
                 "neqsim-{version}-Java8-Java8.jar",  # Newer pattern
                 github_config["assets"]["java8"],  # Standard pattern
-                github_config["assets"]["java11"],  # Fallback
             ]
         elif 11 <= java_version < 21:
             return [
                 "neqsim-{version}.jar",  # Standard pattern
-                github_config["assets"]["java11"],  # Fallback to default
             ]
         elif java_version >= 21:
             return [
                 "neqsim-{version}-Java21-Java21.jar",  # Newer pattern
                 github_config["assets"]["java21"],  # Standard pattern
-                github_config["assets"]["java11"],  # Fallback to default
             ]
         else:
-            return [github_config["assets"]["java11"]]
+            raise ValueError(f"Unsupported Java version: {java_version}")
 
     def _get_jar_from_github(self, version: str, java_version: int) -> Path:
         """Download JAR from GitHub releases with fallback support and caching"""
@@ -182,9 +179,9 @@ class NeqSimDependencyManager:
             if jpype.isJVMStarted():
                 return jpype.getJVMVersion()[0]
             else:
-                return 11  # Default fallback
+                raise RuntimeError("JVM is not started; cannot auto-detect Java version")
         except ImportError:
-            return 11  # Default fallback
+            raise RuntimeError("JPype is not available; cannot auto-detect Java version")
 
     @property
     def jar_cache_dir(self) -> Path:
