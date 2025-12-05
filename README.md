@@ -66,8 +66,7 @@ The project uses pytest with custom markers to categorize tests. Test dependenci
 
 ```bash
 # Install development dependencies (includes pytest and pytest-mock)
-pip install -e ".[dev]"
-# or if using poetry: poetry install
+poetry install
 
 # Run unit tests (fast, excludes tests marked as slow)
 pytest -v -m "not slow" tests/
