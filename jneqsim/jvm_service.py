@@ -25,7 +25,7 @@ def get_neqsim_jar_path(java_version: tuple[int, ...]) -> str:
     try:
         manager = NeqSimDependencyManager()
         if all(v == 0 for v in java_version):
-            java_version = (11,)
+            java_version = (11,) # When generating stubs, assume Java 11 because JVM is not started
         jar_path = manager.resolve_dependency(java_version=java_version[0])
         return str(jar_path)
     except Exception as e:
