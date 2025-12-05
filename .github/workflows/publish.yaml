@@ -38,13 +38,8 @@ jobs:
           python-version: "3.10"
           cache: "poetry"
 
-      - name: Download JAR
-        run: |
-          VERSION=${{inputs.version}}
-          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
-          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
-          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
-          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
+      - name: Install build tools
+        run: pip install build hatch
 
       - name: Install deps
         run: poetry install --no-interaction
@@ -53,7 +48,26 @@ jobs:
         run: poetry run python ./generate_stubs.py
 
       - name: Fixup module naming
-        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0 sed -i -e 's/neqsim./jneqsim.neqsim./g' || true
+
+      - name: Update NeqSim dependency version
+        run: |
+          NEQSIM_VERSION="${{ inputs.version }}"
+          echo "Updating NeqSim dependency to version '$NEQSIM_VERSION'"
+
+          # Get the current version to use as fallback
+          CURRENT_VERSION=$(grep -o 'version: "[^"]*"' jneqsim/dependencies.yaml | head -1 | sed 's/version: "\(.*\)"/\1/')
+          echo "Current version (will become fallback): '$CURRENT_VERSION'"
+          echo "New version: '$NEQSIM_VERSION'"
+
+          # Update the main version to the new version
+          sed -i 's/version: "[^"]*"/version: "'"$NEQSIM_VERSION"'"/' jneqsim/dependencies.yaml
+
+          # Set fallback version to the previous version (current before update)
+          sed -i 's/fallback_version: "[^"]*"/fallback_version: "'"$CURRENT_VERSION"'"/' jneqsim/dependencies.yaml
+
+          echo "Updated dependencies.yaml:"
+          grep -A 10 -B 5 "version:" jneqsim/dependencies.yaml
 
       - name: Bump version
         run: |
@@ -70,13 +84,14 @@ jobs:
           cd tests
           python -m venv .venv
           source .venv/bin/activate
-          pip install ../dist/jneqsim-*.tar.gz pytest
+          pip install ../dist/jneqsimsmall-*.tar.gz pytest
           pytest
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          attestations: false
+      - name: Publish package to TestPyPI
+        run: hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN_MAOHE }}
 
       - name: Notify publish success to Slack
         if: ${{ success() }}

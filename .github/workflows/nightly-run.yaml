@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs at 03:00 UTC on every day-of-week
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
 permissions:
   contents: read
 jobs:
@@ -58,7 +58,6 @@ jobs:
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  
   # Keeps the scheduled workflow from becoming disabled because of "no repo activity"
   workflow-keepalive:
     if: github.event_name == 'schedule'
