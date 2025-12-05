@@ -151,19 +151,15 @@ class NeqSimDependencyManager:
                     # For non-HTTP errors, try fallback
                     continue
 
-        # If we get here, all attempts failed
         error_msg = f"Could not download NeqSim from GitHub for Java {java_version}: {last_error}"
         self.logger.error(error_msg)
         raise RuntimeError(error_msg) from last_error
 
-    def resolve_dependency(self, java_version: Optional[int] = None) -> Path:
+    def resolve_dependency(self, java_version: int | None = None) -> Path:
         """
         Resolve NeqSim dependency
 
         Args:
-            version: Specific NeqSim version to use. If None, uses the version
-                    configured in dependencies.yaml. Note: The config should specify
-                    a pinned version that has been tested with this jneqsim release.
             java_version: Java version, auto-detected if None
 
         Returns:
@@ -172,7 +168,7 @@ class NeqSimDependencyManager:
 
         neqsim_version = self.config["neqsim"]["version"]
         if neqsim_version is None:
-            raise ValueError("NeqSim version must be specified either as an argument or in dependencies.yaml")
+            raise ValueError("NeqSim version must be specified in dependencies.yaml")
 
         java_version = self._resolve_java_version(java_version)
 
@@ -181,7 +177,7 @@ class NeqSimDependencyManager:
 
         return jar_path
 
-    def _resolve_java_version(self, java_version: Optional[int]) -> int:
+    def _resolve_java_version(self, java_version: int | None) -> int:
         """Resolve the Java version to use"""
         if java_version is not None:
             return java_version
