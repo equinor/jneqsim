@@ -1,7 +1,3 @@
-"""
-Unit tests for JAR caching functionality.
-"""
-
 import tempfile
 import zipfile
 from pathlib import Path

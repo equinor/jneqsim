@@ -1,10 +1,3 @@
-"""
-Test suite for the NeqSim dependency management system
-
-This module tests various aspects of the dependency resolution to ensure
-everything works correctly with the new runtime dependency management.
-"""
-
 import tempfile
 import time
 from pathlib import Path

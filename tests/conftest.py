@@ -1,7 +1,3 @@
-"""
-Shared pytest fixtures and configuration for jneqsim tests.
-"""
-
 import tempfile
 from pathlib import Path
 

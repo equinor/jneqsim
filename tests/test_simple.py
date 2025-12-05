@@ -1,7 +1,3 @@
-"""
-Simple integration tests to verify the dependency manager can resolve NeqSim JARs.
-"""
-
 import pytest
 
 from jneqsim.dependency_manager import NeqSimDependencyManager

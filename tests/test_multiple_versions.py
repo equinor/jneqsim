@@ -1,7 +1,3 @@
-"""
-Test multiple Java versions to verify our dependency resolution works correctly.
-"""
-
 import pytest
 
 from jneqsim.dependency_manager import NeqSimDependencyManager
