@@ -86,7 +86,6 @@ class TestNeqSimDependencyManager:
         expected_patterns = [
             "neqsim-{version}-Java8-Java8.jar",
             "neqsim-{version}-Java8.jar",
-            "neqsim-{version}.jar",
         ]
         assert patterns == expected_patterns
 
@@ -96,7 +95,6 @@ class TestNeqSimDependencyManager:
 
         patterns = manager._get_jar_patterns(11)
         expected_patterns = [
-            "neqsim-{version}.jar",
             "neqsim-{version}.jar",
         ]
         assert patterns == expected_patterns
@@ -109,7 +107,6 @@ class TestNeqSimDependencyManager:
         expected_patterns = [
             "neqsim-{version}-Java21-Java21.jar",
             "neqsim-{version}-Java21.jar",
-            "neqsim-{version}.jar",
         ]
         assert patterns == expected_patterns
 
