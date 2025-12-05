@@ -22,6 +22,7 @@ def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
     Raises:
         RuntimeError: If dependency resolution fails
     """
+    print("get_neqsim_jar_path called with version:", version)
     try:
         manager = NeqSimDependencyManager()
         jar_path = manager.resolve_dependency(java_version=version[0])
