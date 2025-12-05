@@ -27,9 +27,7 @@ def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
         jar_path = manager.resolve_dependency(java_version=version[0])
         return str(jar_path)
     except Exception as e:
-        raise RuntimeError(
-            f"Failed to resolve NeqSim dependency for Java {'.'.join(map(str, version))}: {e}"
-        ) from e
+        raise RuntimeError(f"Failed to resolve NeqSim dependency for Java {'.'.join(map(str, version))}: {e}") from e
 
 
 # Initialize JVM with enhanced dependency resolution (only if JPype is available)
