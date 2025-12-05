@@ -84,13 +84,14 @@ jobs:
           cd tests
           python -m venv .venv
           source .venv/bin/activate
-          pip install ../dist/jneqsim-*.tar.gz pytest
+          pip install ../dist/jneqsimsmall-*.tar.gz pytest
           pytest
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          attestations: false
+      - name: Publish package to TestPyPI
+        run: hatch publish -r test
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN_MAOHE }}
 
       - name: Notify publish success to Slack
         if: ${{ success() }}
