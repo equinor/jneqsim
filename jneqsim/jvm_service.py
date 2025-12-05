@@ -9,12 +9,12 @@ except ImportError:
 from .dependency_manager import NeqSimDependencyManager
 
 
-def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
+def get_neqsim_jar_path(java_version: tuple[int, ...]) -> str:
     """
     Get NeqSim JAR path using enhanced dependency resolution
 
     Args:
-        version: JVM version tuple (major, minor, patch)
+        java_version: JVM version tuple (major, minor, patch)
 
     Returns:
         Path to NeqSim JAR file
@@ -22,13 +22,16 @@ def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
     Raises:
         RuntimeError: If dependency resolution fails
     """
-    print("get_neqsim_jar_path called with version:", version)
     try:
         manager = NeqSimDependencyManager()
-        jar_path = manager.resolve_dependency(java_version=version[0])
+        if all(v == 0 for v in java_version):
+            java_version = (11,)
+        jar_path = manager.resolve_dependency(java_version=java_version[0])
         return str(jar_path)
     except Exception as e:
-        raise RuntimeError(f"Failed to resolve NeqSim dependency for Java {'.'.join(map(str, version))}: {e}") from e
+        raise RuntimeError(
+            f"Failed to resolve NeqSim dependency for Java {'.'.join(map(str, java_version))}: {e}"
+        ) from e
 
 
 # Initialize JVM and NeqSim package
