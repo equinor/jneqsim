@@ -5,6 +5,7 @@ Handles resolution and downloading of NeqSim Java dependencies from GitHub relea
 """
 
 import logging
+import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -88,7 +89,7 @@ class NeqSimDependencyManager:
         else:
             return [github_config["assets"]["java11"]]
 
-    def _get_JAR_from_github(self, version: str, java_version: int) -> Path:
+    def _get_jar_from_github(self, version: str, java_version: int) -> Path:
         """Download JAR from GitHub releases with fallback support and caching"""
         github_config = self.config["neqsim"]["sources"]["github"]
 
@@ -106,8 +107,6 @@ class NeqSimDependencyManager:
             url = f"{github_config['base_url']}/v{version}/{jar_filename}"
 
             # Create temporary directory for download
-            import tempfile
-
             temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
             downloaded_jar = temp_dir / jar_filename
 
@@ -177,7 +176,7 @@ class NeqSimDependencyManager:
         java_version = self._resolve_java_version(java_version)
 
         # Download dependency
-        jar_path = self._get_JAR_from_github(neqsim_version, java_version)
+        jar_path = self._get_jar_from_github(neqsim_version, java_version)
 
         return jar_path
 
