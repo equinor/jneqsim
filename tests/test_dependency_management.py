@@ -120,12 +120,12 @@ class TestNeqSimDependencyManager:
         ]
         assert patterns == expected_patterns
 
-    @patch("jneqsim.dependency_manager.NeqSimDependencyManager._get_JAR_from_github")
-    def test_resolve_dependency_success(self, mock_get_JAR_from_github, temp_config_file, temp_cache_dir):
+    @patch("jneqsim.dependency_manager.NeqSimDependencyManager._get_jar_from_github")
+    def test_resolve_dependency_success(self, mock_get_jar_from_github, temp_config_file, temp_cache_dir):
         """Test successful dependency resolution."""
         # Setup mock
         mock_jar_path = Path("/fake/path/neqsim-3.1.2.jar")
-        mock_get_JAR_from_github.return_value = mock_jar_path
+        mock_get_jar_from_github.return_value = mock_jar_path
 
         manager = NeqSimDependencyManager(config_path=temp_config_file, cache_dir=temp_cache_dir)
 
@@ -133,7 +133,7 @@ class TestNeqSimDependencyManager:
         result = manager.resolve_dependency(java_version=11)
 
         assert result == mock_jar_path
-        mock_get_JAR_from_github.assert_called_once_with("3.1.2", 11)
+        mock_get_jar_from_github.assert_called_once_with("3.1.2", 11)
 
     def test_config_loading_invalid_file(self):
         """Test error handling when loading invalid config file."""
