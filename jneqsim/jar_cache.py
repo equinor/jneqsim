@@ -1,9 +1,3 @@
-"""
-JAR Cache Manager
-
-Simplified caching for NeqSim JAR files based on version and Java version.
-"""
-
 import logging
 import zipfile
 from pathlib import Path

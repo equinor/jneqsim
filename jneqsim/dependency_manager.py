@@ -1,9 +1,3 @@
-"""
-NeqSim Dependency Manager
-
-Handles resolution and downloading of NeqSim Java dependencies from GitHub releases.
-"""
-
 import logging
 import tempfile
 import urllib.error

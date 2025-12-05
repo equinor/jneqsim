@@ -1,10 +1,3 @@
-"""
-NeqSim JVM Service with enhanced dependency management
-
-This module handles JVM initialization and NeqSim dependency resolution
-using the NeqSimDependencyManager for runtime dependency management.
-"""
-
 try:
     import jpype
 
