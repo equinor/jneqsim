@@ -1,4 +1,5 @@
 import logging
+import shutil
 import zipfile
 from pathlib import Path
 from typing import Optional
@@ -62,8 +63,6 @@ class JARCacheManager:
             self.logger.debug(f"Replaced cached JAR: {cache_filename}")
 
         # Copy to cache
-        import shutil
-
         shutil.copy2(source_jar, cached_jar)
 
         self.logger.info(f"Cached JAR: {cached_jar.name}")
