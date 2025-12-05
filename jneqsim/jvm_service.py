@@ -28,7 +28,7 @@ def get_neqsim_jar_path(version: tuple[int, ...]) -> str:
         return str(jar_path)
     except Exception as e:
         raise RuntimeError(
-            f"Failed to resolve NeqSim dependency for Java {version[0]}.{version[1]}.{version[2]}: {e}"
+            f"Failed to resolve NeqSim dependency for Java {'.'.join(map(str, version))}: {e}"
         ) from e
 
 
