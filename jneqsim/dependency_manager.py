@@ -181,7 +181,7 @@ class NeqSimDependencyManager:
             else:
                 raise RuntimeError("JVM is not started; cannot auto-detect Java version")
         except ImportError:
-            raise RuntimeError("JPype is not available; cannot auto-detect Java version")
+            raise RuntimeError("JPype is not available; cannot auto-detect Java version") from None
 
     @property
     def jar_cache_dir(self) -> Path:
