@@ -107,48 +107,49 @@ class NeqSimDependencyManager:
             url = f"{github_config['base_url']}/v{version}/{jar_filename}"
 
             # Create temporary directory for download
-            temp_dir = Path(tempfile.mkdtemp(prefix="jneqsim_"))
-            downloaded_jar = temp_dir / jar_filename
+            with tempfile.TemporaryDirectory(prefix="jneqsim_") as temp_dir_str:
+                temp_dir = Path(temp_dir_str)
+                downloaded_jar = temp_dir / jar_filename
 
-            try:
-                is_fallback = i > 0
-                if self.config["logging"]["show_progress"]:
+                try:
+                    is_fallback = i > 0
+                    if self.config["logging"]["show_progress"]:
+                        if is_fallback:
+                            self.logger.info(f"Trying fallback: {jar_filename} for Java {java_version}...")
+                        else:
+                            self.logger.info(f"Downloading {jar_filename} for Java {java_version}...")
+
+                    with urllib.request.urlopen(url) as response:  # noqa: S310
+                        content = response.read()
+
+                    downloaded_jar.write_bytes(content)
+
                     if is_fallback:
-                        self.logger.info(f"Trying fallback: {jar_filename} for Java {java_version}...")
+                        self.logger.warning(
+                            f"Using fallback JAR '{jar_filename}' for Java {java_version}. "
+                            f"Java {java_version}-specific version not available."
+                        )
                     else:
-                        self.logger.info(f"Downloading {jar_filename} for Java {java_version}...")
+                        self.logger.info(f"Downloaded from GitHub: {downloaded_jar.name}")
 
-                with urllib.request.urlopen(url) as response:  # noqa: S310
-                    content = response.read()
+                    # Cache the downloaded JAR
+                    cached_jar = self.cache_manager.cache_jar(downloaded_jar, version, java_version)
+                    return cached_jar
 
-                downloaded_jar.write_bytes(content)
-
-                if is_fallback:
-                    self.logger.warning(
-                        f"Using fallback JAR '{jar_filename}' for Java {java_version}. "
-                        f"Java {java_version}-specific version not available."
-                    )
-                else:
-                    self.logger.info(f"Downloaded from GitHub: {downloaded_jar.name}")
-
-                # Cache the downloaded JAR
-                cached_jar = self.cache_manager.cache_jar(downloaded_jar, version, java_version)
-                return cached_jar
-
-            except urllib.error.HTTPError as e:
-                if e.code == 404:
+                except urllib.error.HTTPError as e:
+                    if e.code == 404:
+                        last_error = e
+                        self.logger.debug(f"JAR not found: {jar_filename} (trying fallback...)")
+                        continue  # Try next pattern
+                    else:
+                        # For other HTTP errors, fail immediately
+                        self.logger.error(f"HTTP error downloading from GitHub: {e}")
+                        raise RuntimeError(f"Could not download NeqSim from GitHub: {e}") from e
+                except Exception as e:
                     last_error = e
-                    self.logger.debug(f"JAR not found: {jar_filename} (trying fallback...)")
-                    continue  # Try next pattern
-                else:
-                    # For other HTTP errors, fail immediately
-                    self.logger.error(f"HTTP error downloading from GitHub: {e}")
-                    raise RuntimeError(f"Could not download NeqSim from GitHub: {e}") from e
-            except Exception as e:
-                last_error = e
-                self.logger.error(f"Failed to download from GitHub: {e}")
-                # For non-HTTP errors, try fallback
-                continue
+                    self.logger.error(f"Failed to download from GitHub: {e}")
+                    # For non-HTTP errors, try fallback
+                    continue
 
         # If we get here, all attempts failed
         error_msg = f"Could not download NeqSim from GitHub for Java {java_version}: {last_error}"
