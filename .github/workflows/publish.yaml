@@ -16,6 +16,10 @@ on:
         description: "Version to publish"
         required: true
         type: string
+      pypi_version:
+        description: "Version to publish jNeqsim to PyPI as"
+        required: true
+        type: string
     secrets:
       SLACK_WEBHOOK_URL:
         required: false
@@ -38,28 +42,42 @@ jobs:
           python-version: "3.10"
           cache: "poetry"
 
-      - name: Download JAR
-        run: |
-          VERSION=${{inputs.version}}
-          wget --output-document "jneqsim/neqsim-Java11.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION.jar"
-          wget --output-document "jneqsim/neqsim-Java8.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java8.jar"
-          wget --output-document "jneqsim/neqsim-Java21.jar" "https://github.com/equinor/neqsim/releases/download/v$VERSION/neqsim-$VERSION-Java21.jar"
-          echo "Wrote JAR to jneqsim/neqsim-Java*.jar"
+      - name: Install build tools
+        run: pip install build hatch
 
       - name: Install deps
         run: poetry install --no-interaction
 
-      - name: Generate stubs
-        run: poetry run python ./generate_stubs.py
+      - name: Update NeqSim dependency version
+        run: |
+          NEQSIM_VERSION="${{ inputs.version }}"
+          echo "Updating NeqSim dependency to version '$NEQSIM_VERSION'"
 
-      - name: Fixup module naming
-        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0  sed -i '' -e 's/neqsim./jneqsim.neqsim./g' || true
+          # Get the current version to use as fallback
+          CURRENT_VERSION=$(grep -o 'version: "[^"]*"' jneqsim/common/config.yaml | head -1 | sed 's/version: "\(.*\)"/\1/')
+          echo "Current version (will become fallback): '$CURRENT_VERSION'"
+          echo "New version: '$NEQSIM_VERSION'"
+
+          # Update the main version to the new version
+          sed -i 's/version: "[^"]*"/version: "'"$NEQSIM_VERSION"'"/' jneqsim/common/config.yaml
+
+          # Set fallback version to the previous version (current before update)
+          sed -i 's/fallback_version: "[^"]*"/fallback_version: "'"$CURRENT_VERSION"'"/' jneqsim/common/config.yaml
+
+          echo "Updated config.yaml:"
+          grep -A 10 -B 5 "version:" jneqsim/common/config.yaml
 
       - name: Bump version
         run: |
           VERSION="${{ inputs.pypi_version || inputs.version }}"
           echo "Setting jNeqsim version to '$VERSION'"
           poetry version "$VERSION"
+
+      - name: Generate stubs
+        run: poetry run python ./generate_stubs.py
+
+      - name: Fixup module naming
+        run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0 sed -i -e 's/neqsim./jneqsim.neqsim./g' || true
 
       - name: Build
         # delete .gitignore. If not the ignored files will not be added to the package
@@ -73,13 +91,11 @@ jobs:
           pip install ../dist/jneqsim-*.tar.gz pytest
           pytest
 
-      - name: Publish package distributions to PyPI
+      - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          attestations: false
 
       - name: Notify publish success to Slack
-        if: ${{ success() }}
+        if: ${{ success()}}
         uses: slackapi/slack-github-action@v2.1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -91,14 +107,14 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "✅ Successfully published jNeqSim version ${{ inputs.version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.version }}/"
+                    "text": "✅ Successfully published jNeqSim version ${{ inputs.pypi_version }} to PyPI! 🎉\nPackage is now available: https://pypi.org/project/jneqsim/${{ inputs.pypi_version }}/"
                   }
                 }
               ]
             }
 
       - name: Notify publish failure to Slack
-        if: ${{ failure() || cancelled() }}
+        if: ${{ (failure() || cancelled()) }}
         uses: slackapi/slack-github-action@v2.1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -110,7 +126,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "❌ Failed to publish jNeqSim version ${{ inputs.version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    "text": "❌ Failed to publish jNeqSim version ${{ inputs.pypi_version }} to PyPI. Check the workflow for details: \n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
                 }
               ]
