@@ -93,6 +93,8 @@ jobs:
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: false
 
       - name: Notify publish success to Slack
         if: ${{ success()}}
