@@ -65,7 +65,7 @@ jobs:
     if: ${{ always() && (needs.check-neqsim-release.result == 'failure' || needs.tests.result == 'failure' || needs.publish.result == 'failure') }}
     steps:
       - name: Notify nightly failure to Slack
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@v3.0.2
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
