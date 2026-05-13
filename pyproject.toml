@@ -20,11 +20,7 @@ packages = [{include = "jneqsim"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-# NOTE: JPype1 1.7.0 has a SIGSEGV regression when numpy is not installed
-# and a Java method has overlapping boolean/String overloads (e.g. NeqSim's
-# setSolidPhaseCheck). See https://github.com/jpype-project/jpype/issues/1358
-# (fix merged in #1360 but not yet released). Lift the upper bound once 1.7.1 ships.
-JPype1 = ">=1.5.0,<1.7.0"
+JPype1 = ">=1.5.0,<1.8.0"
 PyYAML = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
