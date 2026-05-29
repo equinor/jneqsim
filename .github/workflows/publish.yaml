@@ -79,6 +79,9 @@ jobs:
       - name: Fixup module naming
         run: find jneqsim/neqsim -type f -name "*.pyi" -print0 | xargs -0 sed -i -e 's/neqsim./jneqsim.neqsim./g' || true
 
+      - name: Fix stub imports for Pyright
+        run: poetry run python ./fix_stub_imports.py
+
       - name: Build
         # delete .gitignore. If not the ignored files will not be added to the package
         run: rm .gitignore && poetry build
