@@ -1,1 +1,3 @@
-from jneqsim.neqsim import *  # noqa: F403
+from . import neqsim as neqsim
+
+__all__ = ["neqsim"]
