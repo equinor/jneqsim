@@ -24,8 +24,9 @@ def test_config():
                     "base_url": "https://github.com/equinor/neqsim/releases/download",
                     "assets": {
                         "java8": "neqsim-{version}-Java8.jar",
-                        "java11": "neqsim-{version}.jar",
-                        "java21": "neqsim-{version}-Java21.jar",
+                        "java11": "neqsim-{version}-Java11.jar",
+                        "java17": "neqsim-{version}-Java17.jar",
+                        "java21": "neqsim-{version}.jar",
                     },
                 },
             },
@@ -88,7 +89,6 @@ class TestNeqSimDependencyManager:
 
         patterns = manager._get_jar_patterns(8)
         expected_patterns = [
-            "neqsim-{version}-Java8-Java8.jar",
             "neqsim-{version}-Java8.jar",
         ]
         assert patterns == expected_patterns
@@ -100,7 +100,8 @@ class TestNeqSimDependencyManager:
 
         patterns = manager._get_jar_patterns(11)
         expected_patterns = [
-            "neqsim-{version}.jar",
+            "neqsim-{version}-Java11.jar",
+            "neqsim-{version}-Java8.jar",
         ]
         assert patterns == expected_patterns
 
@@ -111,8 +112,18 @@ class TestNeqSimDependencyManager:
 
         patterns = manager._get_jar_patterns(21)
         expected_patterns = [
-            "neqsim-{version}-Java21-Java21.jar",
-            "neqsim-{version}-Java21.jar",
+            "neqsim-{version}.jar",
+        ]
+        assert patterns == expected_patterns
+
+    def test_jar_patterns_java25(self, temp_config_file, temp_cache_dir):
+        """Test JAR filename patterns for Java 25 (any future version >= 21 uses unsuffixed jar)."""
+        config = load_config(temp_config_file)
+        manager = NeqSimDependencyManager(config=config, cache_dir=temp_cache_dir)
+
+        patterns = manager._get_jar_patterns(25)
+        expected_patterns = [
+            "neqsim-{version}.jar",
         ]
         assert patterns == expected_patterns
 
