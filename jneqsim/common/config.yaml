@@ -19,11 +19,12 @@ neqsim:
       base_url: "https://github.com/equinor/neqsim/releases/download"
       # JAR file patterns for different Java versions
       # Note: The code will try multiple naming patterns per Java version
-      # (e.g., Java21-Java21, Java21) to handle variations
+      # (e.g., Java21-Java21, Java21) to handle variations. Java21+ should use the unsuffixed jar
       assets:
         java8: "neqsim-{version}-Java8.jar"
-        java11: "neqsim-{version}.jar" # Java 11+ version
-        java21: "neqsim-{version}-Java21.jar"
+        java11: "neqsim-{version}-Java11.jar" 
+        java17: "neqsim-{version}-Java17.jar"
+        java21: "neqsim-{version}.jar"
 
 # Logging configuration
 logging:

@@ -13,7 +13,7 @@ class TestMultipleJavaVersions:
         assert configured_version is not None
 
         # Test different Java versions
-        java_versions = [8, 11, 17, 21]
+        java_versions = [8, 11, 17, 21, 25]
 
         for java_version in java_versions:
             # Test that the manager can generate patterns for each version
@@ -74,8 +74,12 @@ class TestMultipleJavaVersions:
         patterns_8 = manager._get_jar_patterns(8)
         patterns_11 = manager._get_jar_patterns(11)
         patterns_21 = manager._get_jar_patterns(21)
+        patterns_25 = manager._get_jar_patterns(25)
 
-        # At least some patterns should be different
+        # Java 21 and 25 should use the same unsuffixed jar
+        assert patterns_21 == patterns_25, "Java 21 and 25 should use the same unsuffixed jar"
+
+        # At least some patterns should be different across versions
         all_patterns = [tuple(patterns_8), tuple(patterns_11), tuple(patterns_21)]
         assert len(set(all_patterns)) > 1, "Patterns should vary across Java versions"
 

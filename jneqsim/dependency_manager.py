@@ -45,27 +45,29 @@ class NeqSimDependencyManager:
     def _get_jar_patterns(self, java_version: int) -> list[str]:
         """Get list of JAR filename patterns to try for a given Java version.
 
-        Returns patterns in order of preference, with newer patterns first.
-        Some releases use varying naming patterns (e.g., Java21-Java21 vs Java21).
+        Convention (as of NeqSim 3.12.x):
+            - The unsuffixed jar `neqsim-{version}.jar` targets the newest
+            supported Java (currently 21+).
+            - Older Java versions get a `-Java{N}` suffix, e.g.
+            `neqsim-{version}-Java8.jar`, `-Java11.jar`, `-Java17.jar`.
         """
         github_config = self.config["neqsim"]["sources"]["github"]
+        assets = github_config["assets"]
+        unsuffixed = assets.get("java21", "neqsim-{version}.jar")
 
         if java_version == 8:
-            return [
-                "neqsim-{version}-Java8-Java8.jar",  # Newer pattern
-                github_config["assets"]["java8"],  # Standard pattern
-            ]
-        elif 11 <= java_version < 21:
-            return [
-                "neqsim-{version}.jar",  # Standard pattern
-            ]
-        elif java_version >= 21:
-            return [
-                "neqsim-{version}-Java21-Java21.jar",  # Newer pattern
-                github_config["assets"]["java21"],  # Standard pattern
-            ]
-        else:
-            raise ValueError(f"Unsupported Java version: {java_version}")
+            return [assets["java8"]]
+        # Try explicit -Java11 first, fall back to Java8 jar (backward compatible)
+        if java_version == 11:
+            return [assets.get("java11", "neqsim-{version}-Java11.jar"), assets["java8"]]
+        # Try explicit -Java17 first, fall back to Java8 jar (backward compatible)
+        if java_version == 17:
+            return [assets.get("java17", "neqsim-{version}-Java17.jar"), assets["java8"]]
+        # Unsuffixed jar is built for the newest Java
+        if java_version >= 21:
+            return [unsuffixed]
+
+        raise ValueError(f"Unsupported Java version: {java_version}")
 
     def _get_jar_from_github(self, version: str, java_version: int) -> Path:
         """Download JAR from GitHub releases with fallback support and caching"""
