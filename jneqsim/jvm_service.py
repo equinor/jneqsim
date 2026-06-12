@@ -1,5 +1,6 @@
 try:
     import jpype
+    import jpype.config
 
     JPYPE_AVAILABLE = True
 except ImportError:
@@ -49,6 +50,11 @@ neqsim = None  # Default to None, cannot use NeqSim if JVM fails to start
 if JPYPE_AVAILABLE and jpype and not jpype.isJVMStarted():
     # We need to start the JVM before importing the neqsim package
     try:
+        # Skip JPype's JVM teardown at interpreter exit. On some JVMs (notably
+        # Java 11) this shutdown segfaults (exit code 139) after tests have
+        # already passed. The OS reclaims all resources on process exit anyway.
+        jpype.config.destroy_jvm = False
+
         jpype.startJVM()
         jar_path = get_neqsim_jar_path(jpype.getJVMVersion(), logger, config)
         jpype.addClassPath(jar_path)
