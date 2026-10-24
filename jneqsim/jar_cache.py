@@ -4,7 +4,6 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Optional
 
 
 class JARCacheManager:
@@ -29,7 +28,7 @@ class JARCacheManager:
         """Generate simple cache filename for version and Java version combination"""
         return f"neqsim-{version}-java{java_version}.jar"
 
-    def get_cached_jar(self, version: str, java_version: int) -> Optional[Path]:
+    def get_cached_jar(self, version: str, java_version: int) -> Path | None:
         """Check if JAR exists in cache for the specified version and Java version"""
         if not self.config.get("cache", {}).get("enabled", True):
             return None
