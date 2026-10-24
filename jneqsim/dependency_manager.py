@@ -3,7 +3,6 @@ import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Optional
 
 from .jar_cache import JARCacheManager
 
@@ -12,7 +11,7 @@ class NeqSimDependencyManager:
     """Manages NeqSim JAR dependencies from GitHub releases"""
 
     def __init__(
-        self, logger: logging.Logger | None = None, config: dict | None = None, cache_dir: Optional[Path] = None
+        self, logger: logging.Logger | None = None, config: dict | None = None, cache_dir: Path | None = None
     ):
         """Initialize Neqsim Dependency Manager
 
